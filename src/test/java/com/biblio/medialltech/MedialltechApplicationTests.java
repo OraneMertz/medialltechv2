@@ -1,10 +1,10 @@
-package com.biblio.medialltechv2;
+package com.biblio.medialltech;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class Medialltechv2ApplicationTests {
+class MedialltechApplicationTests {
 
     @Test
     void contextLoads() {

@@ -1,4 +1,4 @@
-package com.biblio.medialltechv2.security;
+package com.biblio.medialltech.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
