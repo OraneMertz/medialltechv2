@@ -1,18 +1,19 @@
 package com.biblio.medialltech.service;
 
+import com.biblio.medialltech.dto.UserDTO;
 import com.biblio.medialltech.model.User;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
-    List<User> getAllUsers();
+    List<UserDTO> getAllUsers();
 
     Optional<User> getUserById(Long id);
 
     Optional<User> getUserByUsername(String username);
 
-    User createUser(User user);
+    User createUser(UserDTO userDTO);
 
     User updateUser(User user);
 

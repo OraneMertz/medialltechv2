@@ -1,8 +1,11 @@
 package com.biblio.medialltech.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
+import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
@@ -22,6 +25,7 @@ public class User {
     private String email;
 
     @Column(nullable = false)
+    @JsonIgnore
     private String password;
 
     @ManyToMany(fetch = FetchType.EAGER)
@@ -30,16 +34,17 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    private Set<Role> roles;
+    private Set<Role> roles = new HashSet<>();
 
     public User() {}
 
-    public User(Long id, String username, String fullname, String email, String password) {
+    public User(Long id, String username, String fullname, String email, String password, Set<Role> roles) {
         this.id = id;
         this.username = username;
         this.fullname = fullname;
         this.email = email;
         this.password = password;
+        this.roles = roles;
     }
 
     public Long getId() {
@@ -86,7 +91,12 @@ public class User {
         return roles;
     }
 
+    public Set<String> getRoleNames() {
+        return roles.stream().map(Role::getName).collect(Collectors.toSet());
+    }
+
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
 }
+

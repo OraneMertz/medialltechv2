@@ -1,26 +1,42 @@
 package com.biblio.medialltech.service.impl;
 
+import com.biblio.medialltech.dto.UserDTO;
 import com.biblio.medialltech.model.User;
+import com.biblio.medialltech.model.Role;
+import com.biblio.medialltech.repository.RoleRepository;
 import com.biblio.medialltech.repository.UserRepository;
 import com.biblio.medialltech.service.UserService;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceJpaImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
 
-    public UserServiceJpaImpl(UserRepository userRepository) {
+    public UserServiceJpaImpl(UserRepository userRepository, RoleRepository roleRepository) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
     }
 
     @Override
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
-    }
+    public List<UserDTO> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        users.forEach(user -> System.out.println(user.getUsername() + " → " + user.getRoleNames()));
+        return users.stream()
+                .map(user -> new UserDTO(
+                        user.getId(),
+                        user.getUsername(),
+                        user.getFullname(),
+                        user.getEmail(),
+                        user.getRoles())).collect(Collectors.toList());
+        }
 
     @Override
     public Optional<User> getUserById(Long id) {
@@ -43,7 +59,21 @@ public class UserServiceJpaImpl implements UserService {
     }
 
     @Override
-    public User createUser(User user) {
+    public User createUser(UserDTO userDTO) {
+        if (userRepository.existsByUsername(userDTO.getUsername())) {
+            throw new IllegalArgumentException("Ce nom d'utilisateur existe déjà.");
+        }
+
+        Role defaultRole = roleRepository.findByName("ROLE_USER").orElseThrow(() -> new RuntimeException("Le rôle ROLE_USER est introuvable."));
+
+        User user = new User();
+        user.setUsername(userDTO.getUsername());
+        user.setEmail(userDTO.getEmail());
+        user.setPassword(user.getPassword());
+        if (user.getRoles() == null || user.getRoles().isEmpty()) {
+            user.setRoles(Set.of(defaultRole));
+        }
+
         return userRepository.save(user);
     }
 

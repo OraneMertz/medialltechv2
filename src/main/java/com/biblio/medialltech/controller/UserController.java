@@ -1,6 +1,6 @@
 package com.biblio.medialltech.controller;
 
-import com.biblio.medialltech.model.LoginRequest;
+import com.biblio.medialltech.dto.UserDTO;
 import com.biblio.medialltech.model.User;
 import com.biblio.medialltech.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +19,8 @@ public class UserController {
     private UserService userService;
 
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
-        return new ResponseEntity<>(userService.getAllUsers(), HttpStatus.OK);
+    public List<UserDTO> getAllUsers() {
+        return userService.getAllUsers();
     }
 
     @GetMapping("/{id}")
@@ -31,14 +31,14 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        if (userService.isUsernameExists(user.getUsername())) {
+    public ResponseEntity<User> createUser(@RequestBody UserDTO userDTO) {
+        if (userService.isUsernameExists(userDTO.getUsername())) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
-        if (userService.isEmailExists(user.getEmail())) {
+        if (userService.isEmailExists(userDTO.getEmail())) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
-        User newUser = userService.createUser(user);
+        User newUser = userService.createUser(userDTO);
         return new ResponseEntity<>(newUser, HttpStatus.CREATED);
     }
 
