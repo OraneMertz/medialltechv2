@@ -1,17 +1,17 @@
 package com.biblio.medialltech.controller;
 
-import com.biblio.medialltech.model.LoginRequest;
 import com.biblio.medialltech.model.User;
 import com.biblio.medialltech.service.UserService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Optional;
 
-@RestController
+@Controller
 public class AuthController {
 
     private final UserService userService;
@@ -20,15 +20,38 @@ public class AuthController {
         this.userService = userService;
     }
 
+    @GetMapping("/")
+    public String home() {
+        return "welcome";
+    }
+
     @PostMapping("/login")
-    public ResponseEntity<User> login(@RequestBody LoginRequest loginRequest) {
-        Optional<User> user = userService.getUserByUsername(loginRequest.getUsername());
-        if (user.isPresent() && userService.authenticateUser(loginRequest.getUsername(), loginRequest.getPassword())) {
-            User responseUser = user.get();
-            responseUser.setPassword(null); // NE JAMAIS RENVOYER LE MOT DE PASSE
-            return new ResponseEntity<>(responseUser, HttpStatus.OK);
+    public String login(@RequestParam String username, @RequestParam String password, Model model, HttpSession session) {
+        Optional<User> userOptional = userService.getUserByUsername(username);
+
+        if (userOptional.isPresent() && userService.authenticateUser(username, password)) {
+            User user = userOptional.get();
+            session.setAttribute("user", user);
+            return "redirect:/welcome";
         } else {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            model.addAttribute("error", true);
+            return "login";
         }
+    }
+
+    @GetMapping("/welcome")
+    public String welcome(HttpSession session, Model model) {
+        User user = (User) session.getAttribute("user");
+        if (user != null) {
+            model.addAttribute("user", user);
+            return "welcome";
+        }
+        return "redirect:/login";
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/login";
     }
 }

@@ -33,6 +33,16 @@ public class UserServiceJpaImpl implements UserService {
     }
 
     @Override
+    public boolean authenticateUser(String username, String password) {
+        Optional<User> userOptional = getUserByUsername(username);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            return password.equals(user.getPassword());
+        }
+        return false;
+    }
+
+    @Override
     public User createUser(User user) {
         return userRepository.save(user);
     }
@@ -49,12 +59,6 @@ public class UserServiceJpaImpl implements UserService {
             return true;
         }
         return false;
-    }
-
-    @Override
-    public boolean authenticateUser(String username, String password) {
-        Optional<User> user = userRepository.findByUsername(username);
-        return user.isPresent() && user.get().getPassword().equals(password);
     }
 
     @Override

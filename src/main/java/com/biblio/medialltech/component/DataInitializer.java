@@ -5,7 +5,6 @@ import com.biblio.medialltech.repository.BookRepository;
 import com.biblio.medialltech.repository.UserRepository;
 import com.biblio.medialltech.model.Book;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -15,12 +14,10 @@ public class DataInitializer implements CommandLineRunner {
 
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
 
-    public DataInitializer(BookRepository bookRepository, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public DataInitializer(BookRepository bookRepository, UserRepository userRepository) {
         this.bookRepository = bookRepository;
         this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -37,8 +34,8 @@ public class DataInitializer implements CommandLineRunner {
 
         if (userRepository.count() == 0) {
             List<User> users = List.of(
-                    new User(null, "admin", "Admin", "admin@exemple;fr", passwordEncoder.encode("admin123")),
-                    new User(null, "user", "User1", "user1@example.com", passwordEncoder.encode("user123"))
+                    new User(null, "admin", "Admin", "admin@exemple;fr", "admin123"),
+                    new User(null, "user", "User1", "user1@example.com", "user123")
             );
             userRepository.saveAll(users);
             System.out.println("👤 Utilisateurs ajoutés !");
