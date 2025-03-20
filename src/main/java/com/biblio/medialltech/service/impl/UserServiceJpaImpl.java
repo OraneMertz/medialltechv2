@@ -1,14 +1,13 @@
 package com.biblio.medialltech.service.impl;
 
 import com.biblio.medialltech.dto.UserDTO;
-import com.biblio.medialltech.model.User;
-import com.biblio.medialltech.model.Role;
+import com.biblio.medialltech.entity.User;
+import com.biblio.medialltech.entity.Role;
 import com.biblio.medialltech.repository.RoleRepository;
 import com.biblio.medialltech.repository.UserRepository;
 import com.biblio.medialltech.service.UserService;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;

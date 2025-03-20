@@ -1,6 +1,6 @@
 package com.biblio.medialltech.repository;
 
-import com.biblio.medialltech.model.Category;
+import com.biblio.medialltech.entity.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

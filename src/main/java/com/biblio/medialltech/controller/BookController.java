@@ -1,8 +1,8 @@
 package com.biblio.medialltech.controller;
 
-import com.biblio.medialltech.model.Category;
+import com.biblio.medialltech.entity.Category;
 import com.biblio.medialltech.service.BookService;
-import com.biblio.medialltech.model.Book;
+import com.biblio.medialltech.entity.Book;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

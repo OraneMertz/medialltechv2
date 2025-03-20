@@ -1,6 +1,6 @@
 package com.biblio.medialltech.repository;
 
-import com.biblio.medialltech.model.Role;
+import com.biblio.medialltech.entity.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

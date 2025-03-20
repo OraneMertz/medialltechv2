@@ -1,6 +1,6 @@
 package com.biblio.medialltech.repository;
 
-import com.biblio.medialltech.model.User;
+import com.biblio.medialltech.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

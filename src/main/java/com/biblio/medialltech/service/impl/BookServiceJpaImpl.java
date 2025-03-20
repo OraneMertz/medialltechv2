@@ -1,11 +1,11 @@
 package com.biblio.medialltech.service.impl;
 
-import com.biblio.medialltech.model.Category;
+import com.biblio.medialltech.entity.Category;
 import com.biblio.medialltech.repository.BookRepository;
 import com.biblio.medialltech.repository.CategoryRepository;
 import com.biblio.medialltech.service.BookService;
 import org.springframework.stereotype.Service;
-import com.biblio.medialltech.model.Book;
+import com.biblio.medialltech.entity.Book;
 
 import java.util.List;
 import java.util.Optional;

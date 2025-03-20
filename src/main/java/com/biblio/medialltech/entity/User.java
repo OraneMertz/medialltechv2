@@ -1,4 +1,4 @@
-package com.biblio.medialltech.model;
+package com.biblio.medialltech.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;

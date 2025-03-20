@@ -1,13 +1,13 @@
 package com.biblio.medialltech.component;
 
-import com.biblio.medialltech.model.Category;
-import com.biblio.medialltech.model.Role;
-import com.biblio.medialltech.model.User;
+import com.biblio.medialltech.entity.Category;
+import com.biblio.medialltech.entity.Role;
+import com.biblio.medialltech.entity.User;
 import com.biblio.medialltech.repository.BookRepository;
 import com.biblio.medialltech.repository.CategoryRepository;
 import com.biblio.medialltech.repository.RoleRepository;
 import com.biblio.medialltech.repository.UserRepository;
-import com.biblio.medialltech.model.Book;
+import com.biblio.medialltech.entity.Book;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 

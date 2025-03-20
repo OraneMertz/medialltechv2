@@ -1,7 +1,7 @@
 package com.biblio.medialltech.service;
 
 import com.biblio.medialltech.dto.UserDTO;
-import com.biblio.medialltech.model.User;
+import com.biblio.medialltech.entity.User;
 
 import java.util.List;
 import java.util.Optional;

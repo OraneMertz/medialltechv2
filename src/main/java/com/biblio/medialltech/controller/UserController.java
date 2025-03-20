@@ -1,7 +1,7 @@
 package com.biblio.medialltech.controller;
 
 import com.biblio.medialltech.dto.UserDTO;
-import com.biblio.medialltech.model.User;
+import com.biblio.medialltech.entity.User;
 import com.biblio.medialltech.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

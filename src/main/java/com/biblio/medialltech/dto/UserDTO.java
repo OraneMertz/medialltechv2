@@ -1,6 +1,6 @@
 package com.biblio.medialltech.dto;
 
-import com.biblio.medialltech.model.Role;
+import com.biblio.medialltech.entity.Role;
 
 import java.util.Set;
 

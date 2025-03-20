@@ -1,4 +1,4 @@
-package com.biblio.medialltech.model;
+package com.biblio.medialltech.entity;
 
 import jakarta.persistence.*;
 

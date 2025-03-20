@@ -1,7 +1,7 @@
 package com.biblio.medialltech.service;
 
-import com.biblio.medialltech.model.Book;
-import com.biblio.medialltech.model.Category;
+import com.biblio.medialltech.entity.Book;
+import com.biblio.medialltech.entity.Category;
 
 import java.util.List;
 import java.util.Optional;
