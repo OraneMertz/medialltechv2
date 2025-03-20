@@ -2,6 +2,7 @@ package com.biblio.medialltech.service;
 
 import com.biblio.medialltech.entity.Book;
 import com.biblio.medialltech.entity.Category;
+import com.biblio.medialltech.entity.User;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,7 +28,7 @@ public interface BookService {
 
     List<Book> getAvailableBooks();
 
-    boolean borrowBook(Long bookId, Long userId);
+    boolean borrowBook(Long bookId, User userId);
 
     boolean returnBook(Long bookId);
 }

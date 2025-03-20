@@ -1,6 +1,7 @@
 package com.biblio.medialltech.service.impl;
 
 import com.biblio.medialltech.entity.Category;
+import com.biblio.medialltech.entity.User;
 import com.biblio.medialltech.repository.BookRepository;
 import com.biblio.medialltech.repository.CategoryRepository;
 import com.biblio.medialltech.service.BookService;
@@ -80,12 +81,12 @@ public class BookServiceJpaImpl implements BookService {
     }
 
     @Override
-    public boolean borrowBook(Long bookId, Long userId) {
+    public boolean borrowBook(Long bookId, User userId) {
         return bookRepository.findById(bookId)
                 .filter(Book::isDisponible)
                 .map(book -> {
                     book.setDisponible(false);
-                    book.setBorrowerId(userId);
+                    book.setBorrower(userId);
                     bookRepository.save(book);
                     return true;
                 })
@@ -98,7 +99,7 @@ public class BookServiceJpaImpl implements BookService {
                 .filter(book -> !book.isDisponible())
                 .map(book -> {
                     book.setDisponible(true);
-                    book.setBorrowerId(null);
+                    book.setBorrower(null);
                     bookRepository.save(book);
                     return true;
                 })

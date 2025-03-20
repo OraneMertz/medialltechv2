@@ -1,6 +1,7 @@
 package com.biblio.medialltech.controller;
 
 import com.biblio.medialltech.entity.Category;
+import com.biblio.medialltech.entity.User;
 import com.biblio.medialltech.service.BookService;
 import com.biblio.medialltech.entity.Book;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,16 +76,17 @@ public class BookController {
         Book book = bookService.getBookById(bookId).orElse(null);
         Optional<Category> category = bookService.getCategoryById(categoryId);
 
-        if (book != null && category != null) {
-            book.setCategory(category);
+        if (book != null && category.isPresent()) {
+            book.setCategory(category.get());
             return new ResponseEntity<>(bookService.updateBook(book), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
+
     @PostMapping("/{bookId}/borrow/{userId}")
-    public ResponseEntity<Void> borrowBook(@PathVariable Long bookId, @PathVariable Long userId) {
+    public ResponseEntity<Void> borrowBook(@PathVariable Long bookId, @PathVariable User userId) {
         if (bookService.borrowBook(bookId, userId)) {
             return new ResponseEntity<>(HttpStatus.OK);
         } else {

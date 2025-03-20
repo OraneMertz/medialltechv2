@@ -34,15 +34,14 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (roleRepository.count() == 0) {
-            Role userRole = new Role("ROLE_USER");
-            Role adminRole = new Role("ROLE_ADMIN");
-            roleRepository.saveAll(List.of(userRole, adminRole));
-            System.out.println("🔑 Rôles ajoutés : " + userRole + " & " + adminRole);
-        }
 
         Role userRole = roleRepository.findByName("ROLE_USER").orElseThrow(()-> new RuntimeException("ROLE_USER introuvable"));
         Role adminRole = roleRepository.findByName("ROLE_ADMIN").orElseThrow(()-> new RuntimeException("ROLE_ADMIN introuvable"));
+
+        if (roleRepository.count() == 0) {
+            roleRepository.saveAll(List.of(userRole, adminRole));
+            System.out.println("🔑 Rôles ajoutés : " + userRole + " & " + adminRole);
+        }
 
         System.out.println("🔎 Rôles récupérés : " + userRole + " & " + adminRole);
 

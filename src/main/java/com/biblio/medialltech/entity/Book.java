@@ -24,8 +24,9 @@ public class Book {
     @Column(name = "is_disponible", nullable = false)
     private boolean isDisponible = true;
 
-    @Column
-    private Long borrowerId;
+    @ManyToOne
+    @JoinColumn(name = "borrower_id")
+    private User borrower;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
@@ -33,25 +34,26 @@ public class Book {
 
     public Book () {}
 
-    public Book(Long id, String title, String author, String image, boolean isDisponible, Long borrowerId) {
+    public Book(Long id, String title, String author, String image, boolean isDisponible, User borrower) {
         this.id = id;
         this.title = title;
         this.author = author;
         this.image = image;
         this.isDisponible = isDisponible;
-        this.borrowerId = borrowerId;
+        this.borrower = borrower;
     }
 
-    public Book(Long id, String title, String author, String image, boolean isDisponible, Long borrowerId, Category category) {
+    public Book(Long id, String title, String author, String image, boolean isDisponible, User borrower, Category category) {
         this.id = id;
         this.title = title;
         this.author = author;
         this.image = image;
         this.isDisponible = isDisponible;
-        this.borrowerId = borrowerId;
+        this.borrower = borrower;
         this.category = category;
     }
 
+    // Getters et setters
     public Long getId() {
         return id;
     }
@@ -92,12 +94,12 @@ public class Book {
         isDisponible = disponible;
     }
 
-    public Long getBorrowerId() {
-        return borrowerId;
+    public User getBorrower() {
+        return borrower;
     }
 
-    public void setBorrowerId(Long borrowerId) {
-        this.borrowerId = borrowerId;
+    public void setBorrower(User borrower) {
+        this.borrower = borrower;
     }
 
     public Category getCategory() {
@@ -108,11 +110,21 @@ public class Book {
         this.category = category;
     }
 
-    public void setCategory(Optional<Category> category) {
-        if (category.isPresent()) {
-            this.category = category.get();
+    public void borrow(User user) {
+        if (this.isDisponible) {
+            this.isDisponible = false;
+            this.borrower = user;
         } else {
-            this.category = null;
+            System.out.println("Le livre " + this.title + " est déjà emprunté.");
+        }
+    }
+
+    public void returnBook() {
+        if (this.borrower != null) {
+            this.isDisponible = true;
+            this.borrower = null;
+        } else {
+            System.out.println("Ce livre n'a pas été emprunté.");
         }
     }
 }
