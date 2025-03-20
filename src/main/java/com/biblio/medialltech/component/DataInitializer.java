@@ -34,17 +34,19 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        Role userRole = roleRepository.findByName("ROLE_USER").orElseGet(() -> {
+        Role role = new Role(null, "ROLE_USER");
+            return roleRepository.save(role);
+        });
 
-        Role userRole = roleRepository.findByName("ROLE_USER").orElseThrow(()-> new RuntimeException("ROLE_USER introuvable"));
-        Role adminRole = roleRepository.findByName("ROLE_ADMIN").orElseThrow(()-> new RuntimeException("ROLE_ADMIN introuvable"));
+        Role adminRole = roleRepository.findByName("ROLE_ADMIN").orElseGet(() -> {
+        Role role = new Role(null, "ROLE_ADMIN");
+            return roleRepository.save(role);
+        });
 
-        if (roleRepository.count() == 0) {
-            roleRepository.saveAll(List.of(userRole, adminRole));
-            System.out.println("🔑 Rôles ajoutés : " + userRole + " & " + adminRole);
-        }
+        System.out.println("🔎 Rôles récupérés/créés : " + userRole + " & " + adminRole);
 
-        System.out.println("🔎 Rôles récupérés : " + userRole + " & " + adminRole);
-
+        // Vérifier et ajouter les utilisateurs
         if (userRepository.count() == 0) {
             List<User> users = List.of(
                     new User(null, "admin", "Admin", "admin@exemple.fr", "admin123",
@@ -56,17 +58,19 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("👤 Utilisateurs ajoutés !");
         }
 
+        // Vérifier et ajouter les catégories
         if (categoryRepository.count() == 0) {
             List<Category> categories = List.of(
-                    new Category(1L, "Informatique", new HashSet<>()),
-                    new Category(2L, "Développement",  new HashSet<>()),
-                    new Category(3L, "Communication",  new HashSet<>()),
-                    new Category(4L, "Relationnel",  new HashSet<>())
+                    new Category(null, "Informatique", new HashSet<>()),
+                    new Category(null, "Développement", new HashSet<>()),
+                    new Category(null, "Communication", new HashSet<>()),
+                    new Category(null, "Relationnel", new HashSet<>())
             );
             categoryRepository.saveAll(categories);
             System.out.println("📚 Catégories ajoutées !");
         }
 
+        // Vérifier et ajouter les livres
         if (bookRepository.count() == 0) {
             List<Book> books = List.of(
                     new Book(null, "Javascript pour les Nuls", "Eva Holland", "image", true, null),
@@ -77,4 +81,3 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 }
-

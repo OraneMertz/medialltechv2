@@ -3,6 +3,7 @@ package com.biblio.medialltech.service.impl;
 import com.biblio.medialltech.dto.UserDTO;
 import com.biblio.medialltech.entity.User;
 import com.biblio.medialltech.entity.Role;
+import com.biblio.medialltech.mapper.UserMapper;
 import com.biblio.medialltech.repository.RoleRepository;
 import com.biblio.medialltech.repository.UserRepository;
 import com.biblio.medialltech.service.UserService;
@@ -18,10 +19,12 @@ public class UserServiceJpaImpl implements UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final UserMapper userMapper;
 
-    public UserServiceJpaImpl(UserRepository userRepository, RoleRepository roleRepository) {
+    public UserServiceJpaImpl(UserRepository userRepository, RoleRepository roleRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.userMapper = userMapper;
     }
 
     @Override
@@ -29,13 +32,9 @@ public class UserServiceJpaImpl implements UserService {
         List<User> users = userRepository.findAll();
         users.forEach(user -> System.out.println(user.getUsername() + " → " + user.getRoleNames()));
         return users.stream()
-                .map(user -> new UserDTO(
-                        user.getId(),
-                        user.getUsername(),
-                        user.getFullname(),
-                        user.getEmail(),
-                        user.getRoles())).collect(Collectors.toList());
-        }
+                .map(userMapper::toDTO)
+                .collect(Collectors.toList());
+    }
 
     @Override
     public Optional<User> getUserById(Long id) {
@@ -63,22 +62,53 @@ public class UserServiceJpaImpl implements UserService {
             throw new IllegalArgumentException("Ce nom d'utilisateur existe déjà.");
         }
 
-        Role defaultRole = roleRepository.findByName("ROLE_USER").orElseThrow(() -> new RuntimeException("Le rôle ROLE_USER est introuvable."));
+        if (userRepository.existsByEmail(userDTO.getEmail())) {
+            throw new IllegalArgumentException("Cet email existe déjà.");
+        }
+
+        Role defaultRole = roleRepository.findByName("ROLE_USER")
+                .orElseThrow(() -> new RuntimeException("Le rôle ROLE_USER est introuvable."));
 
         User user = new User();
         user.setUsername(userDTO.getUsername());
+        user.setFullname(userDTO.getFullname());
         user.setEmail(userDTO.getEmail());
-        user.setPassword(user.getPassword());
-        if (user.getRoles() == null || user.getRoles().isEmpty()) {
-            user.setRoles(Set.of(defaultRole));
+
+        if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
+            user.setPassword(userDTO.getPassword());
+        } else {
+            throw new IllegalArgumentException("Le mot de passe est requis pour la création d'un utilisateur.");
         }
+
+        user.setRoles(Set.of(defaultRole));
 
         return userRepository.save(user);
     }
 
     @Override
-    public User updateUser(User user) {
-        return userRepository.save(user);
+    public User updateUser(Long id, UserDTO userDTO) {
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Utilisateur non trouvé avec l'ID: " + id));
+
+        if (!existingUser.getUsername().equals(userDTO.getUsername()) &&
+                userRepository.existsByUsername(userDTO.getUsername())) {
+            throw new IllegalArgumentException("Ce nom d'utilisateur existe déjà.");
+        }
+
+        if (!existingUser.getEmail().equals(userDTO.getEmail()) &&
+                userRepository.existsByEmail(userDTO.getEmail())) {
+            throw new IllegalArgumentException("Cet email existe déjà.");
+        }
+
+        existingUser.setUsername(userDTO.getUsername());
+        existingUser.setFullname(userDTO.getFullname());
+        existingUser.setEmail(userDTO.getEmail());
+
+        if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
+            existingUser.setPassword(userDTO.getPassword());
+        }
+
+        return userRepository.save(existingUser);
     }
 
     @Override

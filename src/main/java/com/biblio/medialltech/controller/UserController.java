@@ -2,6 +2,7 @@ package com.biblio.medialltech.controller;
 
 import com.biblio.medialltech.dto.UserDTO;
 import com.biblio.medialltech.entity.User;
+import com.biblio.medialltech.mapper.UserMapper;
 import com.biblio.medialltech.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,23 +16,29 @@ import java.util.Optional;
 @RequestMapping("/api/users")
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+    private final UserMapper userMapper;
+
+    public UserController(UserService userService, UserMapper userMapper) {
+        this.userService = userService;
+        this.userMapper = userMapper;
+    }
 
     @GetMapping
-    public List<UserDTO> getAllUsers() {
-        return userService.getAllUsers();
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
+        List<UserDTO> users = userService.getAllUsers();
+        return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
         Optional<User> user = userService.getUserById(id);
-        return user.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+        return user.map(value -> new ResponseEntity<>(userMapper.toDTO(value), HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody UserDTO userDTO) {
+    @PostMapping("/create")
+    public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) {
         if (userService.isUsernameExists(userDTO.getUsername())) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
@@ -39,15 +46,16 @@ public class UserController {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
         User newUser = userService.createUser(userDTO);
-        return new ResponseEntity<>(newUser, HttpStatus.CREATED);
+        return new ResponseEntity<>(userMapper.toDTO(newUser), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
+    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody UserDTO userDTO) {
         Optional<User> existingUser = userService.getUserById(id);
         if (existingUser.isPresent()) {
-            user.setId(id);
-            return new ResponseEntity<>(userService.updateUser(user), HttpStatus.OK);
+            userDTO.setId(id);
+            User updatedUser = userService.updateUser(id, userDTO);
+            return new ResponseEntity<>(userMapper.toDTO(updatedUser), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

@@ -29,7 +29,9 @@ public class Book {
     private User borrower;
 
     @ManyToOne
-    @JoinColumn(name = "category_id")
+    @JoinTable( name = "books_categories",
+                joinColumns = {@JoinColumn(name = "books_id")},
+                inverseJoinColumns = {@JoinColumn(name = "category_id")})
     private Category category;
 
     public Book () {}
