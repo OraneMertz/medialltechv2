@@ -1,8 +1,10 @@
 package com.biblio.medialltech.component;
 
+import com.biblio.medialltech.model.Category;
 import com.biblio.medialltech.model.Role;
 import com.biblio.medialltech.model.User;
 import com.biblio.medialltech.repository.BookRepository;
+import com.biblio.medialltech.repository.CategoryRepository;
 import com.biblio.medialltech.repository.RoleRepository;
 import com.biblio.medialltech.repository.UserRepository;
 import com.biblio.medialltech.model.Book;
@@ -17,11 +19,17 @@ public class DataInitializer implements CommandLineRunner {
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final CategoryRepository categoryRepository;
 
-    public DataInitializer(BookRepository bookRepository, UserRepository userRepository, RoleRepository roleRepository) {
+    public DataInitializer(
+            BookRepository bookRepository,
+            UserRepository userRepository,
+            RoleRepository roleRepository,
+            CategoryRepository categoryRepository) {
         this.bookRepository = bookRepository;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.categoryRepository = categoryRepository;
     }
 
     @Override
@@ -47,6 +55,17 @@ public class DataInitializer implements CommandLineRunner {
             );
             userRepository.saveAll(users);
             System.out.println("👤 Utilisateurs ajoutés !");
+        }
+
+        if (categoryRepository.count() == 0) {
+            List<Category> categories = List.of(
+                    new Category(1L, "Informatique", new HashSet<>()),
+                    new Category(2L, "Développement",  new HashSet<>()),
+                    new Category(3L, "Communication",  new HashSet<>()),
+                    new Category(4L, "Relationnel",  new HashSet<>())
+            );
+            categoryRepository.saveAll(categories);
+            System.out.println("📚 Catégories ajoutées !");
         }
 
         if (bookRepository.count() == 0) {

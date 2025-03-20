@@ -11,4 +11,5 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     List<Book> findByBorrowerId(Long borrowerId);
     List<Book> findByIsDisponible(Boolean isDisponible);
     List<Book> findByAuthorContainingIgnoreCase(String author);
+    List<Book> findByCategoryId(Long categoryId);
 }

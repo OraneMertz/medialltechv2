@@ -1,5 +1,6 @@
 package com.biblio.medialltech.controller;
 
+import com.biblio.medialltech.model.Category;
 import com.biblio.medialltech.service.BookService;
 import com.biblio.medialltech.model.Book;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,11 @@ public class BookController {
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<List<Book>> getBooksByCategory(@PathVariable Long categoryId) {
+        return new ResponseEntity<>(bookService.getBookByCategory(categoryId), HttpStatus.OK);
+    }
+
     @GetMapping("/author/{author}")
     public ResponseEntity<List<Book>> getBooksByAuthor(@PathVariable String author) {
         return new ResponseEntity<>(bookService.getBooksByAuthor(author), HttpStatus.OK);
@@ -53,7 +59,6 @@ public class BookController {
         return new ResponseEntity<>(newBook, HttpStatus.CREATED);
     }
 
-
     @PutMapping("/{id}")
     public ResponseEntity<Book> updateBook(@PathVariable Long id, @RequestBody Book book) {
         Optional<Book> existingBook = bookService.getBookById(id);
@@ -65,10 +70,14 @@ public class BookController {
         }
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
-        if (bookService.deleteBook(id)) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    @PostMapping("/{bookId}/category/{categoryId}")
+    public ResponseEntity<Book> updateBookCategory(@PathVariable Long bookId, @PathVariable Long categoryId) {
+        Book book = bookService.getBookById(bookId).orElse(null);
+        Optional<Category> category = bookService.getCategoryById(categoryId);
+
+        if (book != null && category != null) {
+            book.setCategory(category);
+            return new ResponseEntity<>(bookService.updateBook(book), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -89,6 +98,15 @@ public class BookController {
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
+        if (bookService.deleteBook(id)) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 }

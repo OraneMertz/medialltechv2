@@ -1,6 +1,8 @@
 package com.biblio.medialltech.service.impl;
 
+import com.biblio.medialltech.model.Category;
 import com.biblio.medialltech.repository.BookRepository;
+import com.biblio.medialltech.repository.CategoryRepository;
 import com.biblio.medialltech.service.BookService;
 import org.springframework.stereotype.Service;
 import com.biblio.medialltech.model.Book;
@@ -12,9 +14,11 @@ import java.util.Optional;
 public class BookServiceJpaImpl implements BookService {
 
     private final BookRepository bookRepository;
+    private final CategoryRepository categoryRepository;
 
-    public BookServiceJpaImpl(BookRepository bookRepository) {
+    public BookServiceJpaImpl(BookRepository bookRepository, CategoryRepository categoryRepository) {
         this.bookRepository = bookRepository;
+        this.categoryRepository = categoryRepository;
     }
 
     @Override
@@ -33,7 +37,21 @@ public class BookServiceJpaImpl implements BookService {
     }
 
     @Override
+    public List<Book> getBookByCategory(Long categoryId) {
+        return bookRepository.findByCategoryId(categoryId);
+    }
+
+    @Override
+    public Optional<Category> getCategoryById(Long categoryId) {
+        return categoryRepository.findById(categoryId);
+    }
+
+    @Override
     public Book createBook(Book book) {
+        if (book.getCategory() != null && book.getCategory().getId() != null) {
+            Optional<Category> category = categoryRepository.findById(book.getCategory().getId());
+            category.ifPresent(book::setCategory);
+        }
         return bookRepository.save(book);
     }
 
