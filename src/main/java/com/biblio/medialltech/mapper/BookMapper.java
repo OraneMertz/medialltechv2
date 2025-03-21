@@ -16,8 +16,8 @@ public class BookMapper {
                 book.getTitle(),
                 book.getAuthor(),
                 book.getImage(),
-                book.isDisponible(),
-                book.getBorrower(),
+                book.getStatus(),
+                book.getBorrowerUsername(),
                 book.getCategory()
         );
     }
@@ -31,8 +31,8 @@ public class BookMapper {
         book.setTitle(bookDTO.getTitle());
         book.setAuthor(bookDTO.getAuthor());
         book.setImage(bookDTO.getImage());
-        book.setDisponible(bookDTO.isDisponible());
-        book.setBorrower(bookDTO.getBorrower());
+        book.setStatus(bookDTO.getStatus());
+        book.setBorrowerUsername(bookDTO.getBorrowerUsername());
         book.setCategory(bookDTO.getCategory());
         return book;
     }

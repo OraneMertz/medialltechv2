@@ -1,9 +1,12 @@
 package com.biblio.medialltech.service;
 
-import com.biblio.medialltech.entity.User;
+import com.biblio.medialltech.dto.BorrowingDTO;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface BorrowingService {
-    void borrowBook(User user, Long bookId);
+    @Transactional
+    BorrowingDTO borrowBook(Long bookId, Long userId);
 
-    void returnBook(Long bookId);
+    @Transactional
+    boolean returnBook(Long bookId);
 }
