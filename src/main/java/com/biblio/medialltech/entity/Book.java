@@ -2,10 +2,7 @@ package com.biblio.medialltech.entity;
 
 import jakarta.persistence.*;
 
-import java.util.Optional;
-
-@Entity
-@Table(name = "books")
+@Entity(name = "books")
 public class Book {
 
     @Id
@@ -21,41 +18,32 @@ public class Book {
     @Column
     private String image;
 
-    @Column(name = "is_disponible", nullable = false)
-    private boolean isDisponible = true;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private BookStatus status = BookStatus.AVAILABLE;
+
+    @Column(name = "borrower_username")
+    private String borrowerUsername;
 
     @ManyToOne
-    @JoinColumn(name = "borrower_id")
-    private User borrower;
-
-    @ManyToOne
-    @JoinTable( name = "books_categories",
-                joinColumns = {@JoinColumn(name = "books_id")},
-                inverseJoinColumns = {@JoinColumn(name = "category_id")})
+    @JoinTable(name = "books_categories",
+            joinColumns = {@JoinColumn(name = "books_id")},
+            inverseJoinColumns = {@JoinColumn(name = "category_id")})
     private Category category;
 
-    public Book () {}
-
-    public Book(Long id, String title, String author, String image, boolean isDisponible, User borrower) {
-        this.id = id;
-        this.title = title;
-        this.author = author;
-        this.image = image;
-        this.isDisponible = isDisponible;
-        this.borrower = borrower;
+    public Book() {
     }
 
-    public Book(Long id, String title, String author, String image, boolean isDisponible, User borrower, Category category) {
+    public Book(Long id, String title, String author, String image, BookStatus status, String borrowerUsername, Category category) {
         this.id = id;
         this.title = title;
         this.author = author;
         this.image = image;
-        this.isDisponible = isDisponible;
-        this.borrower = borrower;
+        this.status = status;
+        this.borrowerUsername = borrowerUsername;
         this.category = category;
     }
 
-    // Getters et setters
     public Long getId() {
         return id;
     }
@@ -88,20 +76,20 @@ public class Book {
         this.image = image;
     }
 
-    public boolean isDisponible() {
-        return isDisponible;
+    public BookStatus getStatus() {
+        return status;
     }
 
-    public void setDisponible(boolean disponible) {
-        isDisponible = disponible;
+    public void setStatus(BookStatus status) {
+        this.status = status;
     }
 
-    public User getBorrower() {
-        return borrower;
+    public String getBorrowerUsername() {
+        return borrowerUsername;
     }
 
-    public void setBorrower(User borrower) {
-        this.borrower = borrower;
+    public void setBorrowerUsername(String borrowerUsername) {
+        this.borrowerUsername = borrowerUsername;
     }
 
     public Category getCategory() {
@@ -112,19 +100,19 @@ public class Book {
         this.category = category;
     }
 
-    public void borrow(User user) {
-        if (this.isDisponible) {
-            this.isDisponible = false;
-            this.borrower = user;
+    public void borrow(String username) {
+        if (this.status == BookStatus.AVAILABLE) {
+            this.status = BookStatus.BORROWED;
+            this.borrowerUsername = username;
         } else {
             System.out.println("Le livre " + this.title + " est déjà emprunté.");
         }
     }
 
     public void returnBook() {
-        if (this.borrower != null) {
-            this.isDisponible = true;
-            this.borrower = null;
+        if (this.borrowerUsername != null) {
+            this.status = BookStatus.AVAILABLE;
+            this.borrowerUsername = null;
         } else {
             System.out.println("Ce livre n'a pas été emprunté.");
         }

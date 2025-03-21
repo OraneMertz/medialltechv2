@@ -4,7 +4,6 @@ import com.biblio.medialltech.dto.UserDTO;
 import com.biblio.medialltech.entity.User;
 import com.biblio.medialltech.mapper.UserMapper;
 import com.biblio.medialltech.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -2,26 +2,23 @@ package com.biblio.medialltech.dto;
 
 import com.biblio.medialltech.entity.Role;
 
-import java.util.Set;
-
 public class UserDTO {
     private Long id;
     private String username;
     private String fullname;
     private String email;
-    private String role;
+    private Role role;
     private String password;
-
 
     public UserDTO() {
     }
 
-    public UserDTO(Long id, String username, String fullname, String email, Set<Role> roles) {
+    public UserDTO(Long id, String username, String fullname, String email, Role role) {
         this.id = id;
         this.username = username;
         this.fullname = fullname;
         this.email = email;
-        this.role = roles.stream().findFirst().map(Role::getName).orElse("Aucun rôle");
+        this.role = role;
     }
 
     // Getters et Setters
@@ -57,11 +54,11 @@ public class UserDTO {
         this.email = email;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 

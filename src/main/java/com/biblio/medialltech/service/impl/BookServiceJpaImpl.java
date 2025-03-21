@@ -1,14 +1,14 @@
 package com.biblio.medialltech.service.impl;
 
 import com.biblio.medialltech.dto.BookDTO;
+import com.biblio.medialltech.entity.Book;
+import com.biblio.medialltech.entity.BookStatus;
 import com.biblio.medialltech.entity.Category;
-import com.biblio.medialltech.entity.User;
 import com.biblio.medialltech.mapper.BookMapper;
 import com.biblio.medialltech.repository.BookRepository;
 import com.biblio.medialltech.repository.CategoryRepository;
 import com.biblio.medialltech.service.BookService;
 import org.springframework.stereotype.Service;
-import com.biblio.medialltech.entity.Book;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +25,22 @@ public class BookServiceJpaImpl implements BookService {
         this.bookRepository = bookRepository;
         this.categoryRepository = categoryRepository;
         this.bookMapper = bookMapper;
+    }
+
+    private BookDTO getBookDTO(BookDTO bookDTO) {
+        Book book = bookMapper.toEntity(bookDTO);
+
+        return getBookDTO(book, book.getCategory());
+    }
+
+    private BookDTO getBookDTO(Book book, Category category2) {
+        if (category2 != null && category2.getId() != null) {
+            Optional<Category> category = categoryRepository.findById(category2.getId());
+            category.ifPresent(book::setCategory);
+        }
+
+        Book savedBook = bookRepository.save(book);
+        return bookMapper.toDTO(savedBook);
     }
 
     @Override
@@ -64,18 +80,6 @@ public class BookServiceJpaImpl implements BookService {
         return getBookDTO(bookDTO);
     }
 
-    private BookDTO getBookDTO(BookDTO bookDTO) {
-        Book book = bookMapper.toEntity(bookDTO);
-
-        if (book.getCategory() != null && book.getCategory().getId() != null) {
-            Optional<Category> category = categoryRepository.findById(book.getCategory().getId());
-            category.ifPresent(book::setCategory);
-        }
-
-        Book savedBook = bookRepository.save(book);
-        return bookMapper.toDTO(savedBook);
-    }
-
     @Override
     public BookDTO updateBook(Long id, BookDTO bookDTO) {
         Optional<Book> existingBookOpt = bookRepository.findById(id);
@@ -89,19 +93,9 @@ public class BookServiceJpaImpl implements BookService {
         existingBook.setTitle(bookDTO.getTitle());
         existingBook.setAuthor(bookDTO.getAuthor());
         existingBook.setImage(bookDTO.getImage());
-        existingBook.setDisponible(bookDTO.isDisponible());
+        existingBook.setStatus(bookDTO.getStatus());
 
-        if (bookDTO.getCategory() != null && bookDTO.getCategory().getId() != null) {
-            Optional<Category> category = categoryRepository.findById(bookDTO.getCategory().getId());
-            category.ifPresent(existingBook::setCategory);
-        }
-
-        if (bookDTO.getBorrower() != null) {
-            existingBook.setBorrower(bookDTO.getBorrower());
-        }
-
-        Book updatedBook = bookRepository.save(existingBook);
-        return bookMapper.toDTO(updatedBook);
+        return getBookDTO(existingBook, bookDTO.getCategory());
     }
 
     @Override
@@ -114,26 +108,26 @@ public class BookServiceJpaImpl implements BookService {
     }
 
     @Override
-    public List<BookDTO> getBooksByBorrowerId(Long borrowerId) {
-        return bookRepository.findByBorrowerId(borrowerId).stream()
+    public List<BookDTO> getBooksByBorrower(String borrowerUsername) {
+        return bookRepository.findByBorrowerUsername(borrowerUsername).stream()
                 .map(bookMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<BookDTO> getAvailableBooks() {
-        return bookRepository.findByIsDisponible(true).stream()
+        return bookRepository.findByStatus(BookStatus.AVAILABLE).stream()
                 .map(bookMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public boolean borrowBook(Long bookId, User userId) {
+    public boolean borrowBook(Long bookId, String username) {
         return bookRepository.findById(bookId)
-                .filter(Book::isDisponible)
+                .filter(book -> book.getStatus() == BookStatus.AVAILABLE)
                 .map(book -> {
-                    book.setDisponible(false);
-                    book.setBorrower(userId);
+                    book.setStatus(BookStatus.BORROWED);
+                    book.setBorrowerUsername(username);
                     bookRepository.save(book);
                     return true;
                 })
@@ -143,10 +137,10 @@ public class BookServiceJpaImpl implements BookService {
     @Override
     public boolean returnBook(Long bookId) {
         return bookRepository.findById(bookId)
-                .filter(book -> !book.isDisponible())
+                .filter(book -> book.getStatus() == BookStatus.BORROWED)
                 .map(book -> {
-                    book.setDisponible(true);
-                    book.setBorrower(null);
+                    book.setStatus(BookStatus.AVAILABLE);
+                    book.setBorrowerUsername(null);
                     bookRepository.save(book);
                     return true;
                 })

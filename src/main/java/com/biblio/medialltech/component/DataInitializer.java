@@ -1,64 +1,50 @@
 package com.biblio.medialltech.component;
 
-import com.biblio.medialltech.entity.Category;
-import com.biblio.medialltech.entity.Role;
-import com.biblio.medialltech.entity.User;
+import com.biblio.medialltech.dto.UserDTO;
+import com.biblio.medialltech.entity.*;
 import com.biblio.medialltech.repository.BookRepository;
 import com.biblio.medialltech.repository.CategoryRepository;
-import com.biblio.medialltech.repository.RoleRepository;
 import com.biblio.medialltech.repository.UserRepository;
-import com.biblio.medialltech.entity.Book;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
 
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
     private final CategoryRepository categoryRepository;
 
     public DataInitializer(
             BookRepository bookRepository,
             UserRepository userRepository,
-            RoleRepository roleRepository,
             CategoryRepository categoryRepository) {
         this.bookRepository = bookRepository;
         this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
         this.categoryRepository = categoryRepository;
     }
 
     @Override
     public void run(String... args) {
-        Role userRole = roleRepository.findByName("ROLE_USER").orElseGet(() -> {
-        Role role = new Role(null, "ROLE_USER");
-            return roleRepository.save(role);
-        });
-
-        Role adminRole = roleRepository.findByName("ROLE_ADMIN").orElseGet(() -> {
-        Role role = new Role(null, "ROLE_ADMIN");
-            return roleRepository.save(role);
-        });
-
-        System.out.println("🔎 Rôles récupérés/créés : " + userRole + " & " + adminRole);
-
-        // Vérifier et ajouter les utilisateurs
         if (userRepository.count() == 0) {
-            List<User> users = List.of(
-                    new User(null, "admin", "Admin", "admin@exemple.fr", "admin123",
-                            new HashSet<>(Arrays.asList(userRole, adminRole))),
-                    new User(null, "user", "User1", "user1@example.com", "user123",
-                            new HashSet<>(Collections.singleton(userRole)))
-            );
+            List<User> users = new ArrayList<>();
+
+            UserDTO adminDTO = new UserDTO(null, "admin", "Admin", "admin@exemple.fr", Role.ADMIN);
+            adminDTO.setPassword("admin123");
+            users.add(convertToEntity(adminDTO));
+
+            UserDTO userDTO = new UserDTO(null, "user", "User1", "user1@example.com", Role.USER);
+            userDTO.setPassword("user123");
+            users.add(convertToEntity(userDTO));
+
             userRepository.saveAll(users);
             System.out.println("👤 Utilisateurs ajoutés !");
         }
 
-        // Vérifier et ajouter les catégories
         if (categoryRepository.count() == 0) {
             List<Category> categories = List.of(
                     new Category(null, "Informatique", new HashSet<>()),
@@ -70,14 +56,30 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("📚 Catégories ajoutées !");
         }
 
-        // Vérifier et ajouter les livres
         if (bookRepository.count() == 0) {
-            List<Book> books = List.of(
-                    new Book(null, "Javascript pour les Nuls", "Eva Holland", "image", true, null),
-                    new Book(null, "Coder proprement", "Robert C. Martin", "image", true, null)
-            );
+            List<Book> books = new ArrayList<>();
+            Category informatique = categoryRepository.findByName("Informatique").orElse(null);
+            Category developpement = categoryRepository.findByName("Développement").orElse(null);
+
+            Book book1 = new Book(null, "Javascript pour les Nuls", "Eva Holland", "image", BookStatus.AVAILABLE, null, informatique);
+            Book book2 = new Book(null, "Coder proprement", "Robert C. Martin", "image", BookStatus.AVAILABLE, null, developpement);
+
+            books.add(book1);
+            books.add(book2);
+
             bookRepository.saveAll(books);
             System.out.println("📚 Livres ajoutés !");
         }
+    }
+
+    private User convertToEntity(UserDTO userDTO) {
+        User user = new User();
+        user.setId(userDTO.getId());
+        user.setUsername(userDTO.getUsername());
+        user.setFullname(userDTO.getFullname());
+        user.setEmail(userDTO.getEmail());
+        user.setRole(userDTO.getRole());
+        user.setPassword(userDTO.getPassword());
+        return user;
     }
 }

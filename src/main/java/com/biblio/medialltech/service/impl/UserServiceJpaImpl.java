@@ -4,33 +4,28 @@ import com.biblio.medialltech.dto.UserDTO;
 import com.biblio.medialltech.entity.User;
 import com.biblio.medialltech.entity.Role;
 import com.biblio.medialltech.mapper.UserMapper;
-import com.biblio.medialltech.repository.RoleRepository;
 import com.biblio.medialltech.repository.UserRepository;
 import com.biblio.medialltech.service.UserService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class UserServiceJpaImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
     private final UserMapper userMapper;
 
-    public UserServiceJpaImpl(UserRepository userRepository, RoleRepository roleRepository, UserMapper userMapper) {
+    public UserServiceJpaImpl(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
         this.userMapper = userMapper;
     }
 
     @Override
     public List<UserDTO> getAllUsers() {
         List<User> users = userRepository.findAll();
-        users.forEach(user -> System.out.println(user.getUsername() + " → " + user.getRoleNames()));
         return users.stream()
                 .map(userMapper::toDTO)
                 .collect(Collectors.toList());
@@ -58,30 +53,12 @@ public class UserServiceJpaImpl implements UserService {
 
     @Override
     public User createUser(UserDTO userDTO) {
-        if (userRepository.existsByUsername(userDTO.getUsername())) {
-            throw new IllegalArgumentException("Ce nom d'utilisateur existe déjà.");
-        }
-
-        if (userRepository.existsByEmail(userDTO.getEmail())) {
-            throw new IllegalArgumentException("Cet email existe déjà.");
-        }
-
-        Role defaultRole = roleRepository.findByName("ROLE_USER")
-                .orElseThrow(() -> new RuntimeException("Le rôle ROLE_USER est introuvable."));
-
         User user = new User();
         user.setUsername(userDTO.getUsername());
         user.setFullname(userDTO.getFullname());
         user.setEmail(userDTO.getEmail());
-
-        if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
-            user.setPassword(userDTO.getPassword());
-        } else {
-            throw new IllegalArgumentException("Le mot de passe est requis pour la création d'un utilisateur.");
-        }
-
-        user.setRoles(Set.of(defaultRole));
-
+        user.setRole(userDTO.getRole()); // Utilisation de l'enum Role
+        user.setPassword(userDTO.getPassword());
         return userRepository.save(user);
     }
 
@@ -103,6 +80,7 @@ public class UserServiceJpaImpl implements UserService {
         existingUser.setUsername(userDTO.getUsername());
         existingUser.setFullname(userDTO.getFullname());
         existingUser.setEmail(userDTO.getEmail());
+        existingUser.setRole(userDTO.getRole()); // Mise à jour du rôle
 
         if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
             existingUser.setPassword(userDTO.getPassword());
