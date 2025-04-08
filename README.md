@@ -4,8 +4,10 @@
 Ce projet est une application backend construite avec **Spring Boot**. Il offre des services RESTful pour l'utilisation de medialltech et de sa base de données. 
 
 ### Pré-requis
-Téléchargement de [Java 21](oracle via ce lien : https://www.oracle.com/fr/java/technologies/downloads/)
+Téléchargement de [Java 21](https://www.oracle.com/fr/java/technologies/downloads/)
+
 Téléchargement [PostgreSQL](https://www.postgresql.org/download/windows/) version la plus récente
+
 Téléchargement d'un IDE de préférence [IntelliJ IDEA](https://www.jetbrains.com/idea/download/?section=windows)
 
 ## Installation
