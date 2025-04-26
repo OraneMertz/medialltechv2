@@ -6,6 +6,7 @@ import com.biblio.medialltech.repository.BookRepository;
 import com.biblio.medialltech.repository.CategoryRepository;
 import com.biblio.medialltech.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 
 @Component
+@Profile("dev")
 public class DataInitializer implements CommandLineRunner {
 
     private final BookRepository bookRepository;
