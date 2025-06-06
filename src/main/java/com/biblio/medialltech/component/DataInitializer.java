@@ -44,10 +44,10 @@ public class DataInitializer implements CommandLineRunner {
         if (userRepository.count() == 0) {
             List<User> users = new ArrayList<>();
 
-            UserDTO adminDTO = new UserDTO(null, "admin", "Admin", "admin@example.fr", Role.ADMIN);
+            UserDTO adminDTO = new UserDTO(null, "admin", "Admin", "admin@example.fr", "admin123", Role.ADMIN);
             adminDTO.setPassword("admin123");
 
-            UserDTO userDTO = new UserDTO(null, "user", "User1", "user1@example.com", Role.USER);
+            UserDTO userDTO = new UserDTO(null, "user", "User1", "user1@example.com", "admin123", Role.USER);
             userDTO.setPassword("user123");
 
             users.add(convertToEntity(adminDTO));

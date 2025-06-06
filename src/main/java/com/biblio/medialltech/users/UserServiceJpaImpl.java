@@ -199,7 +199,11 @@ public class UserServiceJpaImpl implements UserService {
                         userDTO.getEmail()
                 );
             }
-
+            
+            // Encrypter le mot de passe
+            String rawPassword = userDTO.getPassword();
+            String encryptedPassword = passwordEncoder.encode(rawPassword);
+            userDTO.setPassword(encryptedPassword);
 
             User user = userMapper.toEntity(userDTO).getData();
             User savedUser = userRepository.save(user);

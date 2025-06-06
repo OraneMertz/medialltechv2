@@ -37,7 +37,7 @@ public class UserController {
     }
 
     @PostMapping("/authenticate")
-    public ResponseEntity<ServiceResponse<UserDTO>> authenticate(
+    public ResponseEntity<ServiceResponse<UserDTO>> login(
             @RequestParam String username,
             @RequestParam String password) {
         return ResponseEntity.ok(userService.authenticateUser(username, password));

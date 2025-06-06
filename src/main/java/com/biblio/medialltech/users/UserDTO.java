@@ -11,11 +11,12 @@ public class UserDTO {
     public UserDTO() {
     }
 
-    public UserDTO(Long id, String username, String fullname, String email, Role role) {
+    public UserDTO(Long id, String username, String fullname, String email, String password, Role role) {
         this.id = id;
         this.username = username;
         this.fullname = fullname;
         this.email = email;
+        this.password = password;
         this.role = role;
     }
 
