@@ -6,7 +6,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "categories")
-public class Category {
+public class Categories {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,9 +18,9 @@ public class Category {
     @ManyToMany(mappedBy = "categories")
     private List<Book> books;
 
-    public Category() {}
+    public Categories() {}
 
-    public Category(Long id, String name, List<Book> books) {
+    public Categories(Long id, String name, List<Book> books) {
         this.id = id;
         this.name = name;
         this.books = books;

@@ -11,31 +11,31 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class CategoryServiceJpaImpl implements CategoryService {
+public class CategoriesServiceJpaImpl implements CategoriesService {
 
-    private final CategoryRepository categoryRepository;
-    private final CategoryMapper categoryMapper;
+    private final CategoriesRepository categoriesRepository;
+    private final CategoriesMapper categoriesMapper;
     private final LogService logService;
 
-    public CategoryServiceJpaImpl(CategoryRepository categoryRepository,
-                                  CategoryMapper categoryMapper,
-                                  LogService logService) {
-        this.categoryRepository = categoryRepository;
-        this.categoryMapper = categoryMapper;
+    public CategoriesServiceJpaImpl(CategoriesRepository categoriesRepository,
+                                    CategoriesMapper categoriesMapper,
+                                    LogService logService) {
+        this.categoriesRepository = categoriesRepository;
+        this.categoriesMapper = categoriesMapper;
         this.logService = logService;
     }
 
     // Récupération de toutes les catégories
     @Override
-    public ServiceResponse<List<CategoryDTO>> getAllCategories() {
+    public ServiceResponse<List<CategoriesDTO>> getAllCategories() {
         try {
-            List<Category> categories = categoryRepository.findAll();
+            List<Categories> categories = categoriesRepository.findAll();
             logService.info("Récupération de toutes les catégories : " + categories.size() + " trouvées.");
             return ServiceResponse.logAndRespond(
                     logService,
                     ResponseCode.SUCCESS,
                     ResponseMessage.CATEGORY_SUCCESS,
-                    categoryMapper.toDTOList(categories).getData(),
+                    categoriesMapper.toDTOList(categories).getData(),
                     false,
                     "Récupération de toutes les catégories réussie."
             );
@@ -50,9 +50,9 @@ public class CategoryServiceJpaImpl implements CategoryService {
 
     // Récupération des catégories par leurs IDs
     @Override
-    public ServiceResponse<CategoryDTO> getCategoryById(Long id) {
+    public ServiceResponse<CategoriesDTO> getCategoryById(Long id) {
         try {
-            Optional<Category> categoryOpt = categoryRepository.findById(id);
+            Optional<Categories> categoryOpt = categoriesRepository.findById(id);
 
             if (categoryOpt.isEmpty()) {
                 return ServiceResponse.logAndRespond(
@@ -65,12 +65,12 @@ public class CategoryServiceJpaImpl implements CategoryService {
                 );
             }
 
-            Category category = categoryOpt.get();
+            Categories categories = categoryOpt.get();
             return ServiceResponse.logAndRespond(
                     logService,
                     ResponseCode.SUCCESS,
                     ResponseMessage.CATEGORY_SUCCESS,
-                    categoryMapper.toDTO(category).getData(),
+                    categoriesMapper.toDTO(categories).getData(),
                     false,
                     "Catégorie trouvée avec ID " + id
             );
@@ -85,9 +85,9 @@ public class CategoryServiceJpaImpl implements CategoryService {
 
     // Récupération des catégories par leurs noms
     @Override
-    public ServiceResponse<CategoryDTO> getCategoryByName(String name) {
+    public ServiceResponse<CategoriesDTO> getCategoryByName(String name) {
         try {
-            Optional<Category> categoryOpt = categoryRepository.findByName(name);
+            Optional<Categories> categoryOpt = categoriesRepository.findByName(name);
 
             if (categoryOpt.isEmpty()) {
                 return ServiceResponse.logAndRespond(
@@ -100,12 +100,12 @@ public class CategoryServiceJpaImpl implements CategoryService {
                 );
             }
 
-            Category category = categoryOpt.get();
+            Categories categories = categoryOpt.get();
             return ServiceResponse.logAndRespond(
                     logService,
                     ResponseCode.SUCCESS,
                     ResponseMessage.CATEGORY_SUCCESS,
-                    categoryMapper.toDTO(category).getData(),
+                    categoriesMapper.toDTO(categories).getData(),
                     false,
                     "Catégorie trouvée avec le nom " + name
             );
@@ -121,9 +121,9 @@ public class CategoryServiceJpaImpl implements CategoryService {
     // Mise à jour des catégories
     @Transactional
     @Override
-    public ServiceResponse<CategoryDTO> updateCategory(Long id, CategoryDTO categoryDTO) {
+    public ServiceResponse<CategoriesDTO> updateCategory(Long id, CategoriesDTO categoriesDTO) {
         try {
-            Optional<Category> optional = categoryRepository.findById(id);
+            Optional<Categories> optional = categoriesRepository.findById(id);
 
             if (optional.isEmpty()) {
                 return ServiceResponse.logAndRespond(
@@ -136,9 +136,9 @@ public class CategoryServiceJpaImpl implements CategoryService {
                 );
             }
 
-            Category existingCategory = optional.get();
-            boolean nameAlreadyExists = !categoryDTO.getName().equals(existingCategory.getName()) &&
-                    categoryRepository.existsByName(categoryDTO.getName());
+            Categories existingCategories = optional.get();
+            boolean nameAlreadyExists = !categoriesDTO.getName().equals(existingCategories.getName()) &&
+                    categoriesRepository.existsByName(categoriesDTO.getName());
 
             if (nameAlreadyExists) {
                 return ServiceResponse.logAndRespond(
@@ -151,14 +151,14 @@ public class CategoryServiceJpaImpl implements CategoryService {
                 );
             }
 
-            existingCategory.setName(categoryDTO.getName());
-            Category updated = categoryRepository.save(existingCategory);
+            existingCategories.setName(categoriesDTO.getName());
+            Categories updated = categoriesRepository.save(existingCategories);
 
             return ServiceResponse.logAndRespond(
                     logService,
                     ResponseCode.SUCCESS,
                     ResponseMessage.CATEGORY_UPDATED,
-                    categoryMapper.toDTO(updated).getData(),
+                    categoriesMapper.toDTO(updated).getData(),
                     false,
                     "Catégorie mise à jour : " + updated.getName()
             );
@@ -174,9 +174,9 @@ public class CategoryServiceJpaImpl implements CategoryService {
     // Création d'une catégorie
     @Transactional
     @Override
-    public ServiceResponse<CategoryDTO> createCategory(CategoryDTO categoryDTO) {
+    public ServiceResponse<CategoriesDTO> createCategory(CategoriesDTO categoriesDTO) {
         try {
-            if (categoryRepository.existsByName(categoryDTO.getName())) {
+            if (categoriesRepository.existsByName(categoriesDTO.getName())) {
                 return ServiceResponse.logAndRespond(
                         logService,
                         ResponseCode.BAD_REQUEST,
@@ -184,29 +184,29 @@ public class CategoryServiceJpaImpl implements CategoryService {
                         null,
                         true,
                         "La catégorie avec le nom '{}' existe déjà.",
-                        categoryDTO.getName()
+                        categoriesDTO.getName()
                 );
             }
             
-            Category category = categoryMapper.toEntity(categoryDTO).getData();
+            Categories categories = categoriesMapper.toEntity(categoriesDTO).getData();
 
-            Category savedCategory = categoryRepository.save(category);
+            Categories savedCategories = categoriesRepository.save(categories);
 
             return ServiceResponse.logAndRespond(
                     logService,
                     ResponseCode.SUCCESS,
                     ResponseMessage.CATEGORY_CREATED,
-                    categoryMapper.toDTO(savedCategory).getData(),
+                    categoriesMapper.toDTO(savedCategories).getData(),
                     false,
                     "Catégorie créée avec succès : {}",
-                    savedCategory.getName()
+                    savedCategories.getName()
             );
         } catch (Exception e) {
             return ServiceResponse.handleException(
                     logService,
                     e,
                     "Erreur lors de la création de la catégorie avec le nom '{}'",
-                    categoryDTO.getName()
+                    categoriesDTO.getName()
             );
         }
     }
@@ -216,7 +216,7 @@ public class CategoryServiceJpaImpl implements CategoryService {
     @Override
     public ServiceResponse<Void> deleteCategory(Long id) {
         try {
-            if (!categoryRepository.existsById(id)) {
+            if (!categoriesRepository.existsById(id)) {
                 return ServiceResponse.logAndRespond(
                         logService,
                         ResponseCode.NOT_FOUND,
@@ -227,7 +227,7 @@ public class CategoryServiceJpaImpl implements CategoryService {
                 );
             }
 
-            categoryRepository.deleteById(id);
+            categoriesRepository.deleteById(id);
             return ServiceResponse.logAndRespond(
                     logService,
                     ResponseCode.SUCCESS,

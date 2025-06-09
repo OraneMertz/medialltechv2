@@ -1,12 +1,12 @@
 package com.biblio.medialltech.component;
 
 import com.biblio.medialltech.books.Book;
-import com.biblio.medialltech.categories.Category;
+import com.biblio.medialltech.categories.Categories;
 import com.biblio.medialltech.users.Role;
 import com.biblio.medialltech.users.User;
 import com.biblio.medialltech.users.UserDTO;
 import com.biblio.medialltech.books.BookRepository;
-import com.biblio.medialltech.categories.CategoryRepository;
+import com.biblio.medialltech.categories.CategoriesRepository;
 import com.biblio.medialltech.users.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
@@ -23,14 +23,14 @@ public class DataInitializer implements CommandLineRunner {
 
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
-    private final CategoryRepository categoryRepository;
+    private final CategoriesRepository categoriesRepository;
 
     public DataInitializer(BookRepository bookRepository,
                            UserRepository userRepository,
-                           CategoryRepository categoryRepository) {
+                           CategoriesRepository categoriesRepository) {
         this.bookRepository = bookRepository;
         this.userRepository = userRepository;
-        this.categoryRepository = categoryRepository;
+        this.categoriesRepository = categoriesRepository;
     }
 
     @Override   
@@ -59,22 +59,22 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void initCategories() {
-        if (categoryRepository.count() == 0) {
-            List<Category> categories = List.of(
-                    new Category(null, "Informatique", new ArrayList<>()),
-                    new Category(null, "Développement", new ArrayList<>()),
-                    new Category(null, "Communication", new ArrayList<>()),
-                    new Category(null, "Relationnel", new ArrayList<>())
+        if (categoriesRepository.count() == 0) {
+            List<Categories> categories = List.of(
+                    new Categories(null, "Informatique", new ArrayList<>()),
+                    new Categories(null, "Développement", new ArrayList<>()),
+                    new Categories(null, "Communication", new ArrayList<>()),
+                    new Categories(null, "Relationnel", new ArrayList<>())
             );
-            categoryRepository.saveAll(categories);
+            categoriesRepository.saveAll(categories);
             System.out.println("📚 Catégories ajoutées !");
         }
     }
 
     private void initBooks() {
         if (bookRepository.count() == 0) {
-            Category informatique = categoryRepository.findByName("Informatique").orElse(null);
-            Category developpement = categoryRepository.findByName("Développement").orElse(null);
+            Categories informatique = categoriesRepository.findByName("Informatique").orElse(null);
+            Categories developpement = categoriesRepository.findByName("Développement").orElse(null);
 
             if (informatique == null || developpement == null) {
                 System.err.println("❌ Erreur : certaines catégories sont manquantes !");

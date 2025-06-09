@@ -1,10 +1,10 @@
 package com.biblio.medialltech.categories;
 
-public class CategoryDTO {
+public class CategoriesDTO {
     private Long id;
     private String name;
 
-    public CategoryDTO() {
+    public CategoriesDTO() {
     }
 
     public Long getId() {

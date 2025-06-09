@@ -1,11 +1,11 @@
 package com.biblio.medialltech.books;
 
-import com.biblio.medialltech.categories.Category;
+import com.biblio.medialltech.categories.Categories;
 import com.biblio.medialltech.logs.LogService;
 import com.biblio.medialltech.logs.ResponseCode;
 import com.biblio.medialltech.logs.ResponseMessage;
 import com.biblio.medialltech.logs.ServiceResponse;
-import com.biblio.medialltech.categories.CategoryRepository;
+import com.biblio.medialltech.categories.CategoriesRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -17,12 +17,12 @@ import java.util.stream.Collectors;
 public class BookMapper {
 
     private final LogService logService;
-    private final CategoryRepository categoryRepository;
+    private final CategoriesRepository categoriesRepository;
 
     public BookMapper(LogService logService,
-                      CategoryRepository categoryRepository) {
+                      CategoriesRepository categoriesRepository) {
         this.logService = logService;
-        this.categoryRepository = categoryRepository;
+        this.categoriesRepository = categoriesRepository;
     }
 
     public BookDTO toDTO(Book book) {
@@ -33,7 +33,7 @@ public class BookMapper {
 
         // Convertir les IDs en List<Long>
         List<Long> categoryIds = book.getCategories() != null ? book.getCategories().stream()
-                .map(Category::getId)
+                .map(Categories::getId)
                 .collect(Collectors.toList()) : new ArrayList<>();
 
         logService.info("Mapping réussi pour le livre : {}", book.getTitle());
@@ -58,8 +58,8 @@ public class BookMapper {
         book.setImage(bookDTO.getImage());
 
         // Récupérer les entités de catégorie à partir des IDs.
-        List<Category> categories = bookDTO.getCategory().stream()
-                .map(categoryRepository::findById)
+        List<Categories> categories = bookDTO.getCategory().stream()
+                .map(categoriesRepository::findById)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());

@@ -8,6 +8,7 @@ import com.biblio.medialltech.logs.LogService;
 import com.biblio.medialltech.logs.ResponseCode;
 import com.biblio.medialltech.logs.ResponseMessage;
 import com.biblio.medialltech.logs.ServiceResponse;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
 
+@Profile("test")
 @Service
 public class AzureBlobStorageService {
 
