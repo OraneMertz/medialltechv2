@@ -27,7 +27,6 @@ dependencies {
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.4.2'
     implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
     implementation 'com.azure.spring:spring-cloud-azure-starter-storage'
-    implementation 'com.azure:azure-storage-blob:12.30.0'
     implementation 'org.hibernate.validator:hibernate-validator:8.0.2.Final'
     implementation 'io.github.cdimascio:dotenv-java:3.2.0'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'

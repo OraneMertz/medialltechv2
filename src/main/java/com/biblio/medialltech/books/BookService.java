@@ -1,6 +1,7 @@
 package com.biblio.medialltech.books;
 
 import com.biblio.medialltech.logs.ServiceResponse;
+import jakarta.transaction.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -21,7 +22,7 @@ public interface BookService {
     
     ServiceResponse<BookDTO> createBook(BookDTO bookDTO);
 
-    ServiceResponse<BookDTO> addImageToBook(Long bookId, MultipartFile file);
+    ServiceResponse<BookDTO> addImageToBook(Long bookId, String imageUrl);
 
     ServiceResponse<BookDTO> updateBook(Long id, BookDTO bookDTO);
 

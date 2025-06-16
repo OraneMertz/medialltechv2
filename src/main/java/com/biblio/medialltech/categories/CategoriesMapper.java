@@ -22,7 +22,7 @@ public class CategoriesMapper {
     public ServiceResponse<CategoriesDTO> toDTO(Categories categories) {
         if (categories == null) {
             logService.warn("Tentative de mappage d'une catégorie null en DTO.");
-            return ServiceResponse.error(ResponseCode.INVALID_DATA, ResponseMessage.CATEGORY_ERROR, null);
+            return ServiceResponse.error(ResponseCode.INVALID_DATA, ResponseMessage.CATEGORY_INVALID, null);
         }
 
         logService.info("Mappage de l'entité Category vers DTO pour la catégorie avec ID: {}", categories.getId());
@@ -38,7 +38,7 @@ public class CategoriesMapper {
     public ServiceResponse<Categories> toEntity(CategoriesDTO dto) {
         if (dto == null) {
             logService.warn("Tentative de mappage d'un CategoryDTO null en entité.");
-            return ServiceResponse.error(ResponseCode.INVALID_DATA, ResponseMessage.CATEGORY_ERROR, null);
+            return ServiceResponse.error(ResponseCode.INVALID_DATA, ResponseMessage.CATEGORY_INVALID, null);
         }
 
         logService.info("Mappage de CategoryDTO vers l'entité Category pour le DTO avec ID: {}", dto.getId());

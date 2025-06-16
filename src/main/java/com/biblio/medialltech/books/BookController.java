@@ -62,8 +62,8 @@ public class BookController {
 
     // Ajouter une image à un livre
     @PostMapping("/{bookId}/image")
-    public ServiceResponse<BookDTO> addImageToBook(@PathVariable Long bookId, @RequestParam("file") MultipartFile file) {
-        return bookService.addImageToBook(bookId, file);
+    public ServiceResponse<BookDTO> addImageToBook(@PathVariable Long bookId, @RequestParam("file") String imageUrl) {
+        return bookService.addImageToBook(bookId, imageUrl);
     }
 
     // Mettre à jour un livre

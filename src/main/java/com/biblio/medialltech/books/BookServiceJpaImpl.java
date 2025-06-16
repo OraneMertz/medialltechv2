@@ -1,14 +1,15 @@
 package com.biblio.medialltech.books;
 
-import com.biblio.medialltech.blobstorage.AzureBlobStorageService;
+import com.biblio.medialltech.borrowers.BorrowerDTO;
 import com.biblio.medialltech.logs.LogService;
 import com.biblio.medialltech.logs.ResponseCode;
 import com.biblio.medialltech.logs.ResponseMessage;
 import com.biblio.medialltech.logs.ServiceResponse;
 import jakarta.transaction.Transactional;
+import org.apache.coyote.Response;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -19,16 +20,13 @@ public class BookServiceJpaImpl implements BookService {
     private final BookRepository bookRepository;
     private final BookMapper bookMapper;
     private final LogService logService;
-    private final AzureBlobStorageService azureBlobStorageService;
 
     public BookServiceJpaImpl(BookRepository bookRepository,
                               BookMapper bookMapper,
-                              LogService logService,
-                              AzureBlobStorageService azureBlobStorageService) {
+                              LogService logService) {
         this.bookRepository = bookRepository;
         this.bookMapper = bookMapper;
         this.logService = logService;
-        this.azureBlobStorageService = azureBlobStorageService;
     }
 
     @Override
@@ -95,7 +93,7 @@ public class BookServiceJpaImpl implements BookService {
                 return ServiceResponse.logAndRespond(
                         logService,
                         ResponseCode.NO_CONTENT,
-                        ResponseMessage.BOOK_NULL,
+                        ResponseMessage.NO_BOOKS_FOR_AUTHOR,
                         books,
                         false,
                         "Aucun livre trouvé pour l'auteur: '{}'",
@@ -152,6 +150,9 @@ public class BookServiceJpaImpl implements BookService {
         }
     }
 
+    /**
+     * Récupère tous les livres par leurs emprunteurs
+     */
     @Override
     public ServiceResponse<List<BookDTO>> getBooksByBorrower(String borrowerUsername) {
         try {
@@ -161,7 +162,7 @@ public class BookServiceJpaImpl implements BookService {
                 return ServiceResponse.logAndRespond(
                         logService,
                         ResponseCode.NOT_FOUND,
-                        ResponseMessage.BOOK_NULL,
+                        ResponseMessage.NO_BOOKS_FOR_BORROWER,
                         null,
                         false,
                         "Aucun livre trouvé pour l'emprunteur: '{}'",
@@ -259,7 +260,7 @@ public class BookServiceJpaImpl implements BookService {
 
     @Transactional
     @Override
-    public ServiceResponse<BookDTO> addImageToBook(Long bookId, MultipartFile file) {
+    public ServiceResponse<BookDTO> addImageToBook(Long bookId, String imageUrl) {
         try {
             Optional<Book> bookOpt = bookRepository.findById(bookId);
 
@@ -277,43 +278,38 @@ public class BookServiceJpaImpl implements BookService {
 
             Book book = bookOpt.get();
 
-            // Appel à Azure pour uploader l'image
-            ServiceResponse<String> uploadResponse = azureBlobStorageService.uploadImage(file);
-
-            if (uploadResponse.getStatusCode() != ResponseCode.SUCCESS) {
+            if (imageUrl == null || imageUrl.trim().isEmpty()) {
                 return ServiceResponse.logAndRespond(
                         logService,
-                        ResponseCode.INTERNAL_ERROR,
-                        ResponseMessage.IMAGE_UPLOAD_ERROR,
-                        null,
-                        true,
-                        "Échec de l'upload de l'image pour le livre '{}'",
-                        book.getTitle()
-                );
-            }
-
-            String imageUrl = uploadResponse.getData();
-            if (imageUrl == null || imageUrl.isEmpty()) {
-                return ServiceResponse.logAndRespond(
-                        logService,
-                        ResponseCode.INTERNAL_ERROR,
-                        ResponseMessage.IMAGE_UPLOAD_ERROR,
+                        ResponseCode.BAD_REQUEST,
+                        ResponseMessage.IMAGE_URL_NOT_FOUND,
                         null,
                         false,
-                        "URL de l'image vide après l'upload pour le livre '{}'",
+                        "L'URL de l'image ne peut pas être vide pour le livre '{}'",
                         book.getTitle()
                 );
             }
 
-            // Mise à jour de l'URL de l'image
-            book.setImage(imageUrl);
+            if (!isValidImageUrl(imageUrl.trim())) {
+                return ServiceResponse.logAndRespond(
+                        logService,
+                        ResponseCode.BAD_REQUEST,
+                        ResponseMessage.IMAGE_URL_EMPTY,
+                        null,
+                        false,
+                        "L'URL de l'image fournie n'est pas valide pour le livre '{}'",
+                        book.getTitle()
+                );
+            }
+
+            book.setImage(imageUrl.trim());
             bookRepository.save(book);
             BookDTO bookDTO = bookMapper.toDTO(book);
 
             return ServiceResponse.logAndRespond(
                     logService,
                     ResponseCode.SUCCESS,
-                    ResponseMessage.BOOK_SUCCESS,
+                    ResponseMessage.IMAGE_SUCCESS,
                     bookDTO,
                     false,
                     "L'image du livre '{}' a été mise à jour avec succès",
@@ -321,6 +317,29 @@ public class BookServiceJpaImpl implements BookService {
             );
         } catch (Exception e) {
             return ServiceResponse.handleException(logService, e, "Erreur lors de la mise à jour de l'image du livre ID '{}'", bookId);
+        }
+    }
+
+    // Méthode utilitaire pour valider l'URL de l'image (optionnelle)
+    private boolean isValidImageUrl(String url) {
+        if (url == null || url.isEmpty()) {
+            return false;
+        }
+
+        try {
+            java.net.URI uri = java.net.URI.create(url);
+            if (uri.getScheme() == null || (!uri.getScheme().equals("http") && !uri.getScheme().equals("https"))) {
+                return false;
+            }
+
+            // Vérification optionnelle des extensions d'image courantes
+            String lowerUrl = url.toLowerCase();
+            return lowerUrl.endsWith(".jpg") || lowerUrl.endsWith(".jpeg") ||
+                    lowerUrl.endsWith(".png") || lowerUrl.endsWith(".gif") ||
+                    lowerUrl.endsWith(".webp") || lowerUrl.endsWith(".svg");
+
+        } catch (IllegalArgumentException e) {
+            return false;
         }
     }
 
