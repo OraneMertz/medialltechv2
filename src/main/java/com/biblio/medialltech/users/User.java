@@ -37,8 +37,7 @@ public class User {
         this.password = password;
         this.role = role;
     }
-
-    // Getters et setters
+    
     public Long getId() {
         return id;
     }

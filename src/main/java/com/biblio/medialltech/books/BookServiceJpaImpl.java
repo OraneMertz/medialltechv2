@@ -1,15 +1,14 @@
 package com.biblio.medialltech.books;
 
-import com.biblio.medialltech.borrowers.BorrowerDTO;
+import com.biblio.medialltech.categories.Categories;
+import com.biblio.medialltech.categories.CategoriesRepository;
 import com.biblio.medialltech.logs.LogService;
 import com.biblio.medialltech.logs.ResponseCode;
 import com.biblio.medialltech.logs.ResponseMessage;
 import com.biblio.medialltech.logs.ServiceResponse;
 import jakarta.transaction.Transactional;
-import org.apache.coyote.Response;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -18,13 +17,16 @@ import java.util.stream.Collectors;
 public class BookServiceJpaImpl implements BookService {
 
     private final BookRepository bookRepository;
+    private final CategoriesRepository categoriesRepository;
     private final BookMapper bookMapper;
     private final LogService logService;
 
     public BookServiceJpaImpl(BookRepository bookRepository,
+                              CategoriesRepository categoriesRepository,
                               BookMapper bookMapper,
                               LogService logService) {
         this.bookRepository = bookRepository;
+        this.categoriesRepository = categoriesRepository;
         this.bookMapper = bookMapper;
         this.logService = logService;
     }
@@ -32,7 +34,21 @@ public class BookServiceJpaImpl implements BookService {
     @Override
     public ServiceResponse<List<BookDTO>> getAllBooks() {
         try {
-            List<BookDTO> books = bookRepository.findAll().stream()
+            List<Book> books = bookRepository.findAll();
+
+            if (books.isEmpty()) {
+                logService.info("Aucun livre trouvé.");
+                return ServiceResponse.logAndRespond(
+                        logService,
+                        ResponseCode.NO_CONTENT,
+                        ResponseMessage.BOOK_NO_CONTENT,
+                        null,
+                        false,
+                        "Aucun livre trouvé"
+                );
+            }
+
+            List<BookDTO> bookDTOs = books.stream()
                     .map(bookMapper::toDTO)
                     .collect(Collectors.toList());
 
@@ -40,10 +56,10 @@ public class BookServiceJpaImpl implements BookService {
                     logService,
                     ResponseCode.SUCCESS,
                     ResponseMessage.BOOK_SUCCESS,
-                    books,
+                    bookDTOs,
                     false,
                     "Récupération de {} livres avec succès",
-                    books.size()
+                    bookDTOs.size()
             );
         } catch (Exception e) {
             return ServiceResponse.handleException(logService, e, "Erreur lors de la récupération des livres");
@@ -61,7 +77,7 @@ public class BookServiceJpaImpl implements BookService {
                         ResponseCode.NOT_FOUND,
                         ResponseMessage.BOOK_NOT_FOUND,
                         null,
-                        false,
+                        true,
                         "L'id {} n'existe pas",
                         id
                 );
@@ -85,30 +101,32 @@ public class BookServiceJpaImpl implements BookService {
     @Override
     public ServiceResponse<List<BookDTO>> getBooksByAuthor(String author) {
         try {
-            List<BookDTO> books = bookRepository.findByAuthorContainingIgnoreCase(author).stream()
-                    .map(bookMapper::toDTO)
-                    .toList();
+            List<Book> books = bookRepository.findByAuthorContainingIgnoreCase(author);
 
             if (books.isEmpty()) {
                 return ServiceResponse.logAndRespond(
                         logService,
-                        ResponseCode.NO_CONTENT,
+                        ResponseCode.NOT_FOUND,
                         ResponseMessage.NO_BOOKS_FOR_AUTHOR,
-                        books,
+                        null,
                         false,
                         "Aucun livre trouvé pour l'auteur: '{}'",
                         author
                 );
             }
 
+            List<BookDTO> bookDTOs = books.stream()
+                    .map(bookMapper::toDTO)
+                    .toList();
+
             return ServiceResponse.logAndRespond(
                     logService,
                     ResponseCode.SUCCESS,
                     ResponseMessage.AUTHOR_SUCCESS,
-                    books,
+                    bookDTOs,
                     false,
-                    "%d livre(s) trouvé(s) pour l'auteur '%s'",
-                    books.size(),
+                    "{} livre(s) trouvé(s) pour l'auteur '{}'",
+                    bookDTOs.size(),
                     author
             );
         } catch (Exception e) {
@@ -119,15 +137,13 @@ public class BookServiceJpaImpl implements BookService {
     @Override
     public ServiceResponse<List<BookDTO>> getBookByCategory(Long categoryId) {
         try {
-            List<BookDTO> books = bookRepository.findByCategoriesId(categoryId).stream()
-                    .map(bookMapper::toDTO)
-                    .toList();
+            List<Book> books = bookRepository.findByCategoriesId(categoryId);
 
             if (books.isEmpty()) {
                 return ServiceResponse.logAndRespond(
                         logService,
                         ResponseCode.NOT_FOUND,
-                        ResponseMessage.CATEGORY_NOT_FOUND,
+                        ResponseMessage.NO_BOOKS_FOR_AUTHOR, // Réutilisation du message générique "pas de livre"
                         null,
                         false,
                         "Aucun livre trouvé pour la catégorie ID: '{}'",
@@ -135,14 +151,18 @@ public class BookServiceJpaImpl implements BookService {
                 );
             }
 
+            List<BookDTO> bookDTOs = books.stream()
+                    .map(bookMapper::toDTO)
+                    .toList();
+
             return ServiceResponse.logAndRespond(
                     logService,
                     ResponseCode.SUCCESS,
-                    ResponseMessage.CATEGORY_SUCCESS,
-                    books,
+                    ResponseMessage.BOOK_SUCCESS,
+                    bookDTOs,
                     false,
                     "{} livre(s) trouvé(s) pour la catégorie ID '{}'",
-                    books.size(),
+                    bookDTOs.size(),
                     categoryId
             );
         } catch (Exception e) {
@@ -227,6 +247,23 @@ public class BookServiceJpaImpl implements BookService {
     @Override
     public ServiceResponse<BookDTO> createBook(BookDTO bookDTO) {
         try {
+            // Vérification des données d'entrée
+            if (bookDTO == null) {
+                return ServiceResponse.logAndRespond(
+                        logService,
+                        ResponseCode.BAD_REQUEST,
+                        ResponseMessage.BOOK_NULL,
+                        null,
+                        true,
+                        "Les données de livre sont nulles"
+                );
+            }
+
+            // Définir le statut par défaut si non spécifié
+            if (bookDTO.getStatus() == null) {
+                bookDTO.setStatus(BookStatus.AVAILABLE);
+            }
+
             ServiceResponse<Book> mappingResult = bookMapper.toEntity(bookDTO);
 
             if (mappingResult.getData() == null) {
@@ -235,13 +272,36 @@ public class BookServiceJpaImpl implements BookService {
                         ResponseCode.INTERNAL_ERROR,
                         ResponseMessage.BOOK_CREATION_ERROR,
                         null,
-                        false,
+                        true,
                         "Échec du mapping BookDTO vers Book pour le titre '{}'",
                         bookDTO.getTitle()
                 );
             }
 
-            Book savedBook = bookRepository.save(mappingResult.getData());
+            Book book = mappingResult.getData();
+
+            // Associer les catégories si des categoryIds sont fournis
+            if (bookDTO.getCategoryIds() != null && !bookDTO.getCategoryIds().isEmpty()) {
+                ServiceResponse<List<Categories>> categoriesResult = validateAndGetCategories(bookDTO.getCategoryIds());
+                if (categoriesResult.isError()) {
+                    return ServiceResponse.logAndRespond(
+                            logService,
+                            categoriesResult.getStatusCode(),
+                            categoriesResult.getMessage(),
+                            null,
+                            true,
+                            "Erreur lors de la validation des catégories"
+                    );
+                }
+
+                book.setCategories(categoriesResult.getData());
+                logService.info("Catégories associées au livre '{}' : {}",
+                        bookDTO.getTitle(), bookDTO.getCategoryIds());
+            } else {
+                logService.info("Aucune catégorie spécifiée pour le livre '{}'", bookDTO.getTitle());
+            }
+
+            Book savedBook = bookRepository.save(book);
             BookDTO savedBookDTO = bookMapper.toDTO(savedBook);
 
             return ServiceResponse.logAndRespond(
@@ -254,7 +314,15 @@ public class BookServiceJpaImpl implements BookService {
                     savedBookDTO.getTitle()
             );
         } catch (Exception e) {
-            return ServiceResponse.handleException(logService, e, "Erreur lors de la création du livre '{}'", bookDTO.getTitle());
+            return ServiceResponse.logAndRespond(
+                    logService,
+                    ResponseCode.INTERNAL_ERROR,
+                    ResponseMessage.BOOK_CREATION_ERROR,
+                    null,
+                    true,
+                    "Erreur lors de la création du livre '{}'",
+                    bookDTO != null ? bookDTO.getTitle() : "null"
+            );
         }
     }
 
@@ -270,7 +338,7 @@ public class BookServiceJpaImpl implements BookService {
                         ResponseCode.NOT_FOUND,
                         ResponseMessage.BOOK_NOT_FOUND,
                         null,
-                        false,
+                        true,
                         "Le livre avec l'ID '{}' n'a pas été trouvé",
                         bookId
                 );
@@ -282,9 +350,9 @@ public class BookServiceJpaImpl implements BookService {
                 return ServiceResponse.logAndRespond(
                         logService,
                         ResponseCode.BAD_REQUEST,
-                        ResponseMessage.IMAGE_URL_NOT_FOUND,
+                        ResponseMessage.IMAGE_URL_EMPTY,
                         null,
-                        false,
+                        true,
                         "L'URL de l'image ne peut pas être vide pour le livre '{}'",
                         book.getTitle()
                 );
@@ -294,9 +362,9 @@ public class BookServiceJpaImpl implements BookService {
                 return ServiceResponse.logAndRespond(
                         logService,
                         ResponseCode.BAD_REQUEST,
-                        ResponseMessage.IMAGE_URL_EMPTY,
+                        ResponseMessage.INVALID_FILE,
                         null,
-                        false,
+                        true,
                         "L'URL de l'image fournie n'est pas valide pour le livre '{}'",
                         book.getTitle()
                 );
@@ -316,7 +384,15 @@ public class BookServiceJpaImpl implements BookService {
                     book.getTitle()
             );
         } catch (Exception e) {
-            return ServiceResponse.handleException(logService, e, "Erreur lors de la mise à jour de l'image du livre ID '{}'", bookId);
+            return ServiceResponse.logAndRespond(
+                    logService,
+                    ResponseCode.INTERNAL_ERROR,
+                    ResponseMessage.IMAGE_UPDATE_ERROR,
+                    null,
+                    true,
+                    "Erreur lors de la mise à jour de l'image du livre ID '{}'",
+                    bookId
+            );
         }
     }
 
@@ -347,6 +423,18 @@ public class BookServiceJpaImpl implements BookService {
     @Override
     public ServiceResponse<BookDTO> updateBook(Long id, BookDTO bookDTO) {
         try {
+            // Vérification des données d'entrée
+            if (bookDTO == null) {
+                return ServiceResponse.logAndRespond(
+                        logService,
+                        ResponseCode.BAD_REQUEST,
+                        ResponseMessage.BOOK_NULL,
+                        null,
+                        true,
+                        "Les données de livre sont nulles"
+                );
+            }
+
             Optional<Book> existingBookOpt = bookRepository.findById(id);
 
             if (existingBookOpt.isEmpty()) {
@@ -355,44 +443,65 @@ public class BookServiceJpaImpl implements BookService {
                         ResponseCode.NOT_FOUND,
                         ResponseMessage.BOOK_NOT_FOUND,
                         null,
-                        false,
+                        true,
                         "Le livre avec l'ID '{}' n'a pas été trouvé",
                         id
                 );
             }
 
-            ServiceResponse<Book> mappingResult = bookMapper.toEntity(bookDTO);
+            Book existingBook = existingBookOpt.get();
 
-            if (mappingResult.getData() == null) {
-                return ServiceResponse.logAndRespond(
-                        logService,
-                        ResponseCode.DATA_HANDLING_ERROR,
-                        ResponseMessage.DATA_HANDLING_ERROR,
-                        null,
-                        false,
-                        "Le mappage du BookDTO pour l'ID '{}' a échoué. Données invalides",
-                        id
-                );
+            // Utiliser la méthode du mapper pour mettre à jour
+            bookMapper.updateEntityFromDTO(existingBook, bookDTO);
+
+            // Mettre à jour les catégories si nécessaire
+            if (bookDTO.getCategoryIds() != null) {
+                if (bookDTO.getCategoryIds().isEmpty()) {
+                    // Supprimer toutes les catégories
+                    existingBook.setCategories(null);
+                    logService.info("Toutes les catégories supprimées du livre ID : {}", id);
+                } else {
+                    // Associer les nouvelles catégories
+                    ServiceResponse<List<Categories>> categoriesResult = validateAndGetCategories(bookDTO.getCategoryIds());
+                    if (categoriesResult.isError()) {
+                        return ServiceResponse.logAndRespond(
+                                logService,
+                                categoriesResult.getStatusCode(),
+                                categoriesResult.getMessage(),
+                                null,
+                                true,
+                                "Erreur lors de la validation des catégories"
+                        );
+                    }
+
+                    existingBook.setCategories(categoriesResult.getData());
+                    logService.info("Catégories mises à jour pour le livre ID {} : {}",
+                            id, bookDTO.getCategoryIds());
+                }
             }
 
-            Book existingBook = existingBookOpt.get();
-            Book bookToUpdate = mappingResult.getData();
-            bookToUpdate.setId(existingBook.getId());
-
-            Book updatedBook = bookRepository.save(bookToUpdate);
+            Book updatedBook = bookRepository.save(existingBook);
             BookDTO updatedBookDTO = bookMapper.toDTO(updatedBook);
 
             return ServiceResponse.logAndRespond(
                     logService,
                     ResponseCode.SUCCESS,
-                    ResponseMessage.BOOK_SUCCESS,
+                    ResponseMessage.BOOK_UPDATED,
                     updatedBookDTO,
                     false,
                     "Le livre avec l'ID '{}' a été mis à jour avec succès",
                     updatedBook.getId()
             );
         } catch (Exception e) {
-            return ServiceResponse.handleException(logService, e, "Erreur lors de la mise à jour du livre avec l'ID '{}'", id);
+            return ServiceResponse.logAndRespond(
+                    logService,
+                    ResponseCode.INTERNAL_ERROR,
+                    ResponseMessage.BOOK_UPDATE_ERROR,
+                    null,
+                    true,
+                    "Erreur lors de la mise à jour du livre avec l'ID '{}'",
+                    id
+            );
         }
     }
 
@@ -405,7 +514,7 @@ public class BookServiceJpaImpl implements BookService {
                         ResponseCode.NOT_FOUND,
                         ResponseMessage.BOOK_NOT_FOUND,
                         null,
-                        false,
+                        true,
                         "Le livre avec l'ID '{}' n'a pas été trouvé",
                         id
                 );
@@ -423,7 +532,68 @@ public class BookServiceJpaImpl implements BookService {
                     id
             );
         } catch (Exception e) {
-            return ServiceResponse.handleException(logService, e, "Erreur lors de la suppression du livre avec l'ID '{}'", id);
+            return ServiceResponse.logAndRespond(
+                    logService,
+                    ResponseCode.INTERNAL_ERROR,
+                    ResponseMessage.DELETE_BOOK_ERROR,
+                    null,
+                    true,
+                    "Erreur lors de la suppression du livre avec l'ID '{}'",
+                    id
+            );
         }
+    }
+
+    /**
+     * Méthode privée pour valider et récupérer les catégories par leurs IDs
+     * @param categoryIds Liste des IDs des catégories
+     * @return ServiceResponse contenant la liste des catégories ou une erreur
+     */
+    private ServiceResponse<List<Categories>> validateAndGetCategories(List<Long> categoryIds) {
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            return ServiceResponse.logAndRespond(
+                    logService,
+                    ResponseCode.BAD_REQUEST,
+                    ResponseMessage.INVALID_INPUT,
+                    null,
+                    true,
+                    "Liste des IDs de catégories vide ou nulle"
+            );
+        }
+
+        // Récupérer les catégories par IDs
+        List<Categories> categories = categoriesRepository.findAllById(categoryIds);
+
+        // Vérifier que toutes les catégories existent
+        if (categories.size() != categoryIds.size()) {
+            List<Long> foundIds = categories.stream()
+                    .map(Categories::getId)
+                    .toList();
+
+            List<Long> missingIds = categoryIds.stream()
+                    .filter(id -> !foundIds.contains(id))
+                    .collect(Collectors.toList());
+
+            return ServiceResponse.logAndRespond(
+                    logService,
+                    ResponseCode.NOT_FOUND,
+                    ResponseMessage.CATEGORY_NOT_FOUND,
+                    null,
+                    true,
+                    "Catégories non trouvées avec les IDs : {}",
+                    missingIds
+            );
+        }
+
+        // Succès : toutes les catégories existent
+        return ServiceResponse.logAndRespond(
+                logService,
+                ResponseCode.SUCCESS,
+                ResponseMessage.CATEGORY_SUCCESS,
+                categories,
+                false,
+                "Validation réussie pour {} catégorie(s)",
+                categories.size()
+        );
     }
 }

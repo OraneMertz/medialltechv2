@@ -79,6 +79,7 @@ public enum ResponseMessage {
     DELETE_CATEGORY_ERROR("Erreur lors de la suppression de la catégorie : %s"),
     DELETE_BOOK_ERROR("Erreur lors de la suppression du livre : %s"),
     DELETE_USER_ERROR("Erreur lors de la suppression de l'utilisateur : %s"),
+    PASSWORD_NOT_MATCH("Les mots de passe ne correspondents pas."),
 
     INVALID_BOOK_DETAILS("Détails du livre fournis sont invalides."),
     INVALID_AUTHENTICATION("L'authentication est incorrect."),

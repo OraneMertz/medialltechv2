@@ -5,7 +5,6 @@ import com.biblio.medialltech.categories.Categories;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -47,18 +46,6 @@ public class Borrower {
     private BookStatus status;
 
     public Borrower() {
-    }
-
-    public Borrower(String author, Long bookId, LocalDate borrowDate, String borrowerUsername, List<Categories> categories, Long id, String image, BookStatus status, String title) {
-        this.author = author;
-        this.bookId = bookId;
-        this.borrowDate = borrowDate;
-        this.borrowerUsername = borrowerUsername;
-        this.categories = categories;
-        this.id = id;
-        this.image = image;
-        this.status = status;
-        this.title = title;
     }
 
     public String getAuthor() {

@@ -5,24 +5,18 @@ import com.biblio.medialltech.logs.LogService;
 import com.biblio.medialltech.logs.ResponseCode;
 import com.biblio.medialltech.logs.ResponseMessage;
 import com.biblio.medialltech.logs.ServiceResponse;
-import com.biblio.medialltech.categories.CategoriesRepository;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
 public class BookMapper {
 
     private final LogService logService;
-    private final CategoriesRepository categoriesRepository;
 
-    public BookMapper(LogService logService,
-                      CategoriesRepository categoriesRepository) {
+    public BookMapper(LogService logService) {
         this.logService = logService;
-        this.categoriesRepository = categoriesRepository;
     }
 
     public BookDTO toDTO(Book book) {
@@ -31,43 +25,90 @@ public class BookMapper {
             return null;
         }
 
-        // Convertir les IDs en List<Long>
-        List<Long> categoryIds = book.getCategories() != null ? book.getCategories().stream()
-                .map(Categories::getId)
-                .collect(Collectors.toList()) : new ArrayList<>();
+        BookDTO dto = new BookDTO();
 
-        logService.info("Mapping réussi pour le livre : {}", book.getTitle());
+        // Utilisation de tous les setters
+        dto.setId(book.getId());
+        dto.setTitle(book.getTitle());
+        dto.setAuthor(book.getAuthor());
+        dto.setImage(book.getImage());
+        dto.setStatus(book.getStatus());
+        dto.setBorrowerUsername(book.getBorrowerUsername()); // Nouveau champ
 
-        return new BookDTO(
-                book.getTitle(),
-                book.getAuthor(),
-                book.getImage(),
-                categoryIds
-        );
+        // Conversion des catégories en IDs
+        if (book.getCategories() != null && !book.getCategories().isEmpty()) {
+            List<Long> categoryIds = book.getCategories().stream()
+                    .map(Categories::getId)
+                    .collect(Collectors.toList());
+            dto.setCategoryIds(categoryIds);
+        }
+
+        logService.info("Mappage réussi de Book vers BookDTO avec ID : {}", book.getId());
+        return dto;
     }
 
     public ServiceResponse<Book> toEntity(BookDTO bookDTO) {
-        if (bookDTO == null || bookDTO.getCategory() == null || bookDTO.getCategory().isEmpty()) {
-            logService.warn("BookDTO invalide fourni : catégorie nulle ou manquante.");
-            return ServiceResponse.errorNoData(ResponseCode.NO_CONTENT, ResponseMessage.CATEGORY_NULL);
+        if (bookDTO == null) {
+            logService.warn("BookDTO est null.");
+            return ServiceResponse.errorNoData(ResponseCode.BAD_REQUEST, ResponseMessage.BOOK_NULL);
+        }
+
+        // Validation des données requises
+        if (bookDTO.getTitle() == null || bookDTO.getTitle().trim().isEmpty()) {
+            logService.warn("BookDTO invalide : titre manquant.");
+            return ServiceResponse.errorNoData(ResponseCode.BAD_REQUEST, ResponseMessage.INVALID_BOOK_DETAILS);
+        }
+
+        if (bookDTO.getAuthor() == null || bookDTO.getAuthor().trim().isEmpty()) {
+            logService.warn("BookDTO invalide : auteur manquant.");
+            return ServiceResponse.errorNoData(ResponseCode.BAD_REQUEST, ResponseMessage.INVALID_BOOK_DETAILS);
         }
 
         Book book = new Book();
-        book.setTitle(bookDTO.getTitle());
-        book.setAuthor(bookDTO.getAuthor());
+        book.setId(bookDTO.getId());
+        book.setTitle(bookDTO.getTitle().trim());
+        book.setAuthor(bookDTO.getAuthor().trim());
         book.setImage(bookDTO.getImage());
 
-        // Récupérer les entités de catégorie à partir des IDs.
-        List<Categories> categories = bookDTO.getCategory().stream()
-                .map(categoriesRepository::findById)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toList());
+        // Définir le statut (AVAILABLE par défaut si non spécifié)
+        if (bookDTO.getStatus() != null) {
+            book.setStatus(bookDTO.getStatus());
+        } else {
+            book.setStatus(BookStatus.AVAILABLE);
+        }
 
-        book.setCategories(categories);
+        // Note: Les catégories seront définies dans le service
+        // car le mapper ne doit pas accéder aux repositories
 
-        logService.info("Mappage réussi de BookDTO à l'entité Book : {}", bookDTO.getTitle());
-
+        logService.info("Mappage réussi de BookDTO à Book avec titre : {}", bookDTO.getTitle());
         return ServiceResponse.success(ResponseCode.SUCCESS, ResponseMessage.BOOK_SUCCESS, book);
+    }
+
+    /**
+     * Méthode pour mettre à jour un Book existant avec les données du DTO
+     */
+    public void updateEntityFromDTO(Book book, BookDTO dto) {
+        if (book == null || dto == null) {
+            logService.warn("Impossible de mettre à jour : book ou dto est null");
+            return;
+        }
+
+        if (dto.getTitle() != null && !dto.getTitle().trim().isEmpty()) {
+            book.setTitle(dto.getTitle().trim());
+        }
+
+        if (dto.getAuthor() != null && !dto.getAuthor().trim().isEmpty()) {
+            book.setAuthor(dto.getAuthor().trim());
+        }
+
+        if (dto.getImage() != null) {
+            book.setImage(dto.getImage());
+        }
+
+        if (dto.getStatus() != null) {
+            book.setStatus(dto.getStatus());
+        }
+
+        logService.info("Mise à jour de l'entité Book avec ID : {}", book.getId());
     }
 }

@@ -4,6 +4,7 @@ import com.biblio.medialltech.logs.LogService;
 import com.biblio.medialltech.logs.ResponseCode;
 import com.biblio.medialltech.logs.ResponseMessage;
 import com.biblio.medialltech.logs.ServiceResponse;
+import com.biblio.medialltech.security.ChangePasswordDTO;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -28,14 +29,31 @@ public class UserServiceJpaImpl implements UserService {
     public ServiceResponse<List<UserDTO>> getAllUsers() {
         try {
             List<User> users = userRepository.findAll();
-            logService.info("Récupération de tous les utilisateurs : " + users.size() + " trouvés.");
+
+            if (users.isEmpty()) {
+                logService.info("Aucun utilisateur trouvé.");
+                return ServiceResponse.logAndRespond(
+                        logService,
+                        ResponseCode.NO_CONTENT,
+                        ResponseMessage.USER_NO_CONTENT,
+                        null,
+                        false,
+                        "Aucun utilisateur trouvé"
+                );
+            }
+
+            List<UserDTO> userDTOs = users.stream()
+                    .map(userMapper::toDTO)
+                    .toList();
+
             return ServiceResponse.logAndRespond(
                     logService,
                     ResponseCode.SUCCESS,
                     ResponseMessage.USER_SUCCESS,
-                    userMapper.toDTOList(users),
+                    userDTOs,
                     false,
-                    "Récupération de tous les utilisateurs réussie"
+                    "Récupération de {} utilisateur(s) avec succès",
+                    userDTOs.size()
             );
         } catch (Exception e) {
             return ServiceResponse.handleException(
@@ -105,22 +123,6 @@ public class UserServiceJpaImpl implements UserService {
     @Override
     public ServiceResponse<UserDTO> authenticateUser(String username, String password) {
         try {
-            ServiceResponse<UserDTO> response = getUserByUsername(username);
-
-            // Vérifie si l'utilisateur existe
-            if (response.getData() == null) {
-                return ServiceResponse.logAndRespond(
-                        logService,
-                        ResponseCode.NOT_FOUND,
-                        ResponseMessage.USER_NOT_FOUND,
-                        null,
-                        true,
-                        "Utilisateur non trouvé avec le nom : {}",
-                        username
-                );
-            }
-
-            UserDTO userDTO = response.getData();
             Optional<User> userEntityOpt = userRepository.findByUsername(username);
 
             if (userEntityOpt.isEmpty()) {
@@ -130,7 +132,7 @@ public class UserServiceJpaImpl implements UserService {
                         ResponseMessage.USER_NOT_FOUND,
                         null,
                         true,
-                        "Utilisateur non trouvé dans la base : {}",
+                        "Utilisateur non trouvé avec le nom : {}",
                         username
                 );
             }
@@ -154,7 +156,7 @@ public class UserServiceJpaImpl implements UserService {
                     logService,
                     ResponseCode.SUCCESS,
                     ResponseMessage.AUTHENTICATION_SUCCESS,
-                    userDTO,
+                    userMapper.toDTO(userEntity),
                     false,
                     "Authentification réussie pour l'utilisateur : {}",
                     username
@@ -170,15 +172,123 @@ public class UserServiceJpaImpl implements UserService {
         }
     }
 
+    @Override
+    public ServiceResponse<Boolean> changePassword(Long userId, ChangePasswordDTO changePasswordDTO) {
+        try {
+            // Vérification des paramètres d'entrée
+            if (changePasswordDTO == null) {
+                return ServiceResponse.logAndRespond(
+                        logService,
+                        ResponseCode.BAD_REQUEST,
+                        ResponseMessage.INVALID_INPUT,
+                        false,
+                        true,
+                        "Les données de changement de mot de passe sont nulles"
+                );
+            }
+
+            String currentPassword = changePasswordDTO.getCurrentPassword();
+            String newPassword = changePasswordDTO.getNewPassword();
+
+            if (currentPassword == null || currentPassword.isEmpty()) {
+                return ServiceResponse.logAndRespond(
+                        logService,
+                        ResponseCode.BAD_REQUEST,
+                        ResponseMessage.INVALID_INPUT,
+                        false,
+                        true,
+                        "Le mot de passe actuel est requis"
+                );
+            }
+
+            if (newPassword == null || newPassword.isEmpty()) {
+                return ServiceResponse.logAndRespond(
+                        logService,
+                        ResponseCode.BAD_REQUEST,
+                        ResponseMessage.INVALID_INPUT,
+                        false,
+                        true,
+                        "Le nouveau mot de passe est requis"
+                );
+            }
+
+            // Récupération de l'utilisateur
+            Optional<User> userOpt = userRepository.findById(userId);
+            if (userOpt.isEmpty()) {
+                return ServiceResponse.logAndRespond(
+                        logService,
+                        ResponseCode.NOT_FOUND,
+                        ResponseMessage.USER_NOT_FOUND,
+                        false,
+                        true,
+                        "Utilisateur non trouvé avec ID : {}",
+                        userId
+                );
+            }
+
+            User user = userOpt.get();
+
+            // Vérification du mot de passe actuel
+            if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+                return ServiceResponse.logAndRespond(
+                        logService,
+                        ResponseCode.UNAUTHORIZED,
+                        ResponseMessage.PASSWORD_NOT_MATCH,
+                        false,
+                        true,
+                        "Mot de passe actuel incorrect pour l'utilisateur ID : {}",
+                        userId
+                );
+            }
+
+            // Chiffrement et mise à jour du nouveau mot de passe
+            String encryptedNewPassword = passwordEncoder.encode(newPassword);
+            user.setPassword(encryptedNewPassword);
+            userRepository.save(user);
+
+            return ServiceResponse.logAndRespond(
+                    logService,
+                    ResponseCode.SUCCESS,
+                    ResponseMessage.USER_UPDATED,
+                    true,
+                    false,
+                    "Mot de passe changé avec succès pour l'utilisateur : {}",
+                    user.getUsername()
+            );
+
+        } catch (Exception e) {
+            return ServiceResponse.logAndRespond(
+                    logService,
+                    ResponseCode.INTERNAL_ERROR,
+                    ResponseMessage.USER_UPDATE_ERROR,
+                    false,
+                    true,
+                    "Erreur lors du changement de mot de passe pour l'utilisateur ID : {}",
+                    userId
+            );
+        }
+    }
 
     @Override
     public ServiceResponse<UserDTO> createUser(UserDTO userDTO) {
         try {
-
-            if (userRepository.existsByUsername(userDTO.getUsername())) {
+            // Vérification des données d'entrée
+            if (userDTO == null) {
                 return ServiceResponse.logAndRespond(
                         logService,
                         ResponseCode.BAD_REQUEST,
+                        ResponseMessage.USER_NULL,
+                        null,
+                        true,
+                        "Les données utilisateur sont nulles"
+                );
+            }
+
+            // Vérifier si l'utilisateur avec le même nom d'utilisateur existe déjà
+            if (userRepository.existsByUsername(userDTO.getUsername())) {
+                return ServiceResponse.logAndRespond(
+                        logService,
+                        ResponseCode.ALREADY_EXISTS,
                         ResponseMessage.USERNAME_ALREADY_EXISTS,
                         null,
                         true,
@@ -191,7 +301,7 @@ public class UserServiceJpaImpl implements UserService {
             if (userRepository.existsByEmail(userDTO.getEmail())) {
                 return ServiceResponse.logAndRespond(
                         logService,
-                        ResponseCode.BAD_REQUEST,
+                        ResponseCode.ALREADY_EXISTS,
                         ResponseMessage.EMAIL_ALREADY_EXISTS,
                         null,
                         true,
@@ -199,7 +309,7 @@ public class UserServiceJpaImpl implements UserService {
                         userDTO.getEmail()
                 );
             }
-            
+
             // Encrypter le mot de passe
             String rawPassword = userDTO.getPassword();
             String encryptedPassword = passwordEncoder.encode(rawPassword);
@@ -210,7 +320,7 @@ public class UserServiceJpaImpl implements UserService {
 
             return ServiceResponse.logAndRespond(
                     logService,
-                    ResponseCode.SUCCESS,
+                    ResponseCode.CREATED,
                     ResponseMessage.USER_CREATED,
                     userMapper.toDTO(savedUser),
                     false,
@@ -218,18 +328,34 @@ public class UserServiceJpaImpl implements UserService {
                     savedUser.getUsername()
             );
         } catch (Exception e) {
-            return ServiceResponse.handleException(
+            assert userDTO != null;
+            return ServiceResponse.logAndRespond(
                     logService,
-                    e,
+                    ResponseCode.INTERNAL_ERROR,
+                    ResponseMessage.USER_CREATION_ERROR,
+                    null,
+                    true,
                     "Erreur lors de la création de l'utilisateur avec le nom d'utilisateur '{}'",
                     userDTO.getUsername()
             );
         }
     }
-
+    
     @Override
     public ServiceResponse<UserDTO> updateUser(Long id, UserDTO userDTO) {
         try {
+            // Vérification des données d'entrée
+            if (userDTO == null) {
+                return ServiceResponse.logAndRespond(
+                        logService,
+                        ResponseCode.BAD_REQUEST,
+                        ResponseMessage.USER_NULL,
+                        null,
+                        true,
+                        "Les données utilisateur sont nulles"
+                );
+            }
+
             Optional<User> userOpt = userRepository.findById(id);
 
             if (userOpt.isEmpty()) {
@@ -245,12 +371,13 @@ public class UserServiceJpaImpl implements UserService {
 
             User existingUser = userOpt.get();
 
-            // Vérification des doublons de nom d'utilisateur et d'email
-            if (!existingUser.getUsername().equals(userDTO.getUsername()) &&
+            // Vérification des doublons de nom d'utilisateur et d'email (si modifiés)
+            if (userDTO.getUsername() != null &&
+                    !existingUser.getUsername().equals(userDTO.getUsername()) &&
                     userRepository.existsByUsername(userDTO.getUsername())) {
                 return ServiceResponse.logAndRespond(
                         logService,
-                        ResponseCode.BAD_REQUEST,
+                        ResponseCode.ALREADY_EXISTS,
                         ResponseMessage.USERNAME_ALREADY_EXISTS,
                         null,
                         true,
@@ -259,11 +386,12 @@ public class UserServiceJpaImpl implements UserService {
                 );
             }
 
-            if (!existingUser.getEmail().equals(userDTO.getEmail()) &&
+            if (userDTO.getEmail() != null &&
+                    !existingUser.getEmail().equals(userDTO.getEmail()) &&
                     userRepository.existsByEmail(userDTO.getEmail())) {
                 return ServiceResponse.logAndRespond(
                         logService,
-                        ResponseCode.BAD_REQUEST,
+                        ResponseCode.ALREADY_EXISTS,
                         ResponseMessage.EMAIL_ALREADY_EXISTS,
                         null,
                         true,
@@ -272,15 +400,8 @@ public class UserServiceJpaImpl implements UserService {
                 );
             }
 
-            // Mettre à jour l'utilisateur
-            existingUser.setUsername(userDTO.getUsername());
-            existingUser.setFullname(userDTO.getFullname());
-            existingUser.setEmail(userDTO.getEmail());
-            existingUser.setRole(userDTO.getRole());
-
-            if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
-                existingUser.setPassword(userDTO.getPassword());
-            }
+            // ✅ UTILISATION DE updateEntityFromDTO
+            userMapper.updateEntityFromDTO(existingUser, userDTO);
 
             User updatedUser = userRepository.save(existingUser);
             return ServiceResponse.logAndRespond(
@@ -293,9 +414,12 @@ public class UserServiceJpaImpl implements UserService {
                     updatedUser.getUsername()
             );
         } catch (Exception e) {
-            return ServiceResponse.handleException(
+            return ServiceResponse.logAndRespond(
                     logService,
-                    e,
+                    ResponseCode.INTERNAL_ERROR,
+                    ResponseMessage.USER_UPDATE_ERROR,
+                    null,
+                    true,
                     "Erreur lors de la mise à jour de l'utilisateur avec ID '{}'",
                     id
             );
@@ -326,9 +450,12 @@ public class UserServiceJpaImpl implements UserService {
                     "Utilisateur supprimé avec ID : " + id
             );
         } catch (Exception e) {
-            return ServiceResponse.handleException(
+            return ServiceResponse.logAndRespond(
                     logService,
-                    e,
+                    ResponseCode.INTERNAL_ERROR,
+                    ResponseMessage.DELETE_USER_ERROR,
+                    false,
+                    true,
                     "Erreur lors de la suppression de l'utilisateur avec ID '{}'",
                     id
             );
@@ -342,11 +469,11 @@ public class UserServiceJpaImpl implements UserService {
             return ServiceResponse.logAndRespond(
                     logService,
                     ResponseCode.SUCCESS,
-                    exists ? ResponseMessage.USERNAME_ALREADY_EXISTS : ResponseMessage.USERNAME_AVAILABLE,
+                    exists ? ResponseMessage.USERNAME_NOT_AVAILABLE : ResponseMessage.USERNAME_AVAILABLE,
                     exists,
                     false,
                     "Vérification du nom d'utilisateur '{}' : {}",
-                    username, exists
+                    username, exists ? "non disponible" : "disponible"
             );
         } catch (Exception e) {
             return ServiceResponse.handleException(
@@ -369,7 +496,7 @@ public class UserServiceJpaImpl implements UserService {
                     exists,
                     false,
                     "Vérification de l'email '{}' : {}",
-                    email, exists
+                    email, exists ? "déjà utilisé" : "disponible"
             );
         } catch (Exception e) {
             return ServiceResponse.handleException(

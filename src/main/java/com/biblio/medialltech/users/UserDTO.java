@@ -1,26 +1,23 @@
 package com.biblio.medialltech.users;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class UserDTO {
     private Long id;
     private String username;
     private String fullname;
     private String email;
     private Role role;
+
+    // Mot de passe seulement pour les requêtes entrantes (création/modification)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String password;
 
     public UserDTO() {
     }
 
-    public UserDTO(Long id, String username, String fullname, String email, String password, Role role) {
-        this.id = id;
-        this.username = username;
-        this.fullname = fullname;
-        this.email = email;
-        this.password = password;
-        this.role = role;
-    }
-
-    // Getters et Setters
     public Long getId() {
         return id;
     }
@@ -60,12 +57,23 @@ public class UserDTO {
     public void setRole(Role role) {
         this.role = role;
     }
-
+    
     public String getPassword() {
         return password;
     }
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    @Override
+    public String toString() {
+        return "UserDTO{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", fullname='" + fullname + '\'' +
+                ", email='" + email + '\'' +
+                ", role=" + role +
+                '}';
     }
 }

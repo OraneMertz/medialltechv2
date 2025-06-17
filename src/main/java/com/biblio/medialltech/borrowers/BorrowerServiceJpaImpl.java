@@ -1,5 +1,6 @@
 package com.biblio.medialltech.borrowers;
 
+import com.biblio.medialltech.books.BookStatus;
 import com.biblio.medialltech.logs.LogService;
 import com.biblio.medialltech.logs.ResponseCode;
 import com.biblio.medialltech.logs.ResponseMessage;
@@ -9,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class BorrowerServiceJpaImpl implements BorrowerService {
@@ -28,18 +28,32 @@ public class BorrowerServiceJpaImpl implements BorrowerService {
     @Override
     public ServiceResponse<List<BorrowerDTO>> getAllBorrowers() {
         try {
-            List<BorrowerDTO> borrowers = borrowerRepository.findAll().stream()
+            List<Borrower> borrowers = borrowerRepository.findAll();
+
+            if (borrowers.isEmpty()) {
+                logService.info("Aucun emprunteur trouvé.");
+                return ServiceResponse.logAndRespond(
+                        logService,
+                        ResponseCode.NO_CONTENT,
+                        ResponseMessage.NO_BORROWINGS,
+                        null,
+                        false,
+                        "Aucun emprunteur trouvé"
+                );
+            }
+
+            List<BorrowerDTO> borrowerDTOs = borrowers.stream()
                     .map(borrowerMapper::toDTO)
-                    .collect(Collectors.toList());
+                    .toList(); // ✅ Modernisé
 
             return ServiceResponse.logAndRespond(
                     logService,
                     ResponseCode.SUCCESS,
                     ResponseMessage.BORROWER_SUCCESS,
-                    borrowers,
+                    borrowerDTOs,
                     false,
                     "Récupération de {} emprunteur(s) avec succès",
-                    borrowers.size()
+                    borrowerDTOs.size()
             );
         } catch (Exception e) {
             return ServiceResponse.handleException(logService, e, "Erreur lors de la récupération des emprunteurs");
@@ -57,7 +71,7 @@ public class BorrowerServiceJpaImpl implements BorrowerService {
                         ResponseCode.NOT_FOUND,
                         ResponseMessage.BORROWER_NOT_FOUND,
                         null,
-                        false,
+                        true,
                         "L'emprunteur avec l'ID {} n'existe pas",
                         id
                 );
@@ -81,30 +95,32 @@ public class BorrowerServiceJpaImpl implements BorrowerService {
     @Override
     public ServiceResponse<List<BorrowerDTO>> getBorrowersByUsername(String username) {
         try {
-            List<BorrowerDTO> borrowers = borrowerRepository.findByBorrowerUsernameContainingIgnoreCase(username).stream()
-                    .map(borrowerMapper::toDTO)
-                    .toList();
+            List<Borrower> borrowers = borrowerRepository.findByBorrowerUsernameContainingIgnoreCase(username);
 
             if (borrowers.isEmpty()) {
                 return ServiceResponse.logAndRespond(
                         logService,
-                        ResponseCode.NO_CONTENT,
+                        ResponseCode.NOT_FOUND,
                         ResponseMessage.NO_BORROWER_FOR_USERNAME,
-                        borrowers,
+                        null,
                         false,
                         "Aucun emprunteur trouvé pour le nom d'utilisateur: '{}'",
                         username
                 );
             }
 
+            List<BorrowerDTO> borrowerDTOs = borrowers.stream()
+                    .map(borrowerMapper::toDTO)
+                    .toList();
+
             return ServiceResponse.logAndRespond(
                     logService,
                     ResponseCode.SUCCESS,
                     ResponseMessage.BORROWER_SUCCESS,
-                    borrowers,
+                    borrowerDTOs,
                     false,
                     "{} emprunteur(s) trouvé(s) pour le nom d'utilisateur '{}'",
-                    borrowers.size(),
+                    borrowerDTOs.size(),
                     username
             );
         } catch (Exception e) {
@@ -115,9 +131,7 @@ public class BorrowerServiceJpaImpl implements BorrowerService {
     @Override
     public ServiceResponse<List<BorrowerDTO>> getBorrowersByBookId(Long bookId) {
         try {
-            List<BorrowerDTO> borrowers = borrowerRepository.findByBookId(bookId).stream()
-                    .map(borrowerMapper::toDTO)
-                    .toList();
+            List<Borrower> borrowers = borrowerRepository.findByBookId(bookId);
 
             if (borrowers.isEmpty()) {
                 return ServiceResponse.logAndRespond(
@@ -131,14 +145,18 @@ public class BorrowerServiceJpaImpl implements BorrowerService {
                 );
             }
 
+            List<BorrowerDTO> borrowerDTOs = borrowers.stream()
+                    .map(borrowerMapper::toDTO)
+                    .toList();
+
             return ServiceResponse.logAndRespond(
                     logService,
                     ResponseCode.SUCCESS,
                     ResponseMessage.BORROWER_SUCCESS,
-                    borrowers,
+                    borrowerDTOs,
                     false,
                     "{} emprunteur(s) trouvé(s) pour le livre ID '{}'",
-                    borrowers.size(),
+                    borrowerDTOs.size(),
                     bookId
             );
         } catch (Exception e) {
@@ -149,9 +167,7 @@ public class BorrowerServiceJpaImpl implements BorrowerService {
     @Override
     public ServiceResponse<List<BorrowerDTO>> getBorrowersByCategory(Long categoryId) {
         try {
-            List<BorrowerDTO> borrowers = borrowerRepository.findByCategoriesId(categoryId).stream()
-                    .map(borrowerMapper::toDTO)
-                    .toList();
+            List<Borrower> borrowers = borrowerRepository.findByCategoriesId(categoryId);
 
             if (borrowers.isEmpty()) {
                 return ServiceResponse.logAndRespond(
@@ -165,14 +181,18 @@ public class BorrowerServiceJpaImpl implements BorrowerService {
                 );
             }
 
+            List<BorrowerDTO> borrowerDTOs = borrowers.stream()
+                    .map(borrowerMapper::toDTO)
+                    .toList();
+
             return ServiceResponse.logAndRespond(
                     logService,
                     ResponseCode.SUCCESS,
                     ResponseMessage.BORROWER_SUCCESS,
-                    borrowers,
+                    borrowerDTOs,
                     false,
                     "{} emprunteur(s) trouvé(s) pour la catégorie ID '{}'",
-                    borrowers.size(),
+                    borrowerDTOs.size(),
                     categoryId
             );
         } catch (Exception e) {
@@ -184,15 +204,27 @@ public class BorrowerServiceJpaImpl implements BorrowerService {
     @Override
     public ServiceResponse<BorrowerDTO> createBorrower(BorrowerDTO borrowerDTO) {
         try {
-            ServiceResponse<Borrower> mappingResult = borrowerMapper.toEntity(borrowerDTO);
-
-            if (mappingResult.getData() == null) {
+            // Vérification des données d'entrée
+            if (borrowerDTO == null) {
                 return ServiceResponse.logAndRespond(
                         logService,
-                        ResponseCode.INTERNAL_ERROR,
-                        ResponseMessage.UNEXPECTED_ERROR,
+                        ResponseCode.BAD_REQUEST,
+                        ResponseMessage.BORROWING_DTO_NULL,
                         null,
-                        false,
+                        true,
+                        "Les données d'emprunteur sont nulles"
+                );
+            }
+
+            ServiceResponse<Borrower> mappingResult = borrowerMapper.toEntity(borrowerDTO);
+
+            if (mappingResult.isError() || mappingResult.getData() == null) {
+                return ServiceResponse.logAndRespond(
+                        logService,
+                        mappingResult.getStatusCode(),
+                        mappingResult.getMessage(),
+                        null,
+                        true,
                         "Échec du mapping BorrowerDTO vers Borrower pour l'utilisateur '{}'",
                         borrowerDTO.getBorrowerUsername()
                 );
@@ -211,7 +243,15 @@ public class BorrowerServiceJpaImpl implements BorrowerService {
                     savedBorrowerDTO.getBorrowerUsername()
             );
         } catch (Exception e) {
-            return ServiceResponse.handleException(logService, e, "Erreur lors de la création de l'emprunteur '{}'", borrowerDTO.getBorrowerUsername());
+            return ServiceResponse.logAndRespond(
+                    logService,
+                    ResponseCode.INTERNAL_ERROR,
+                    ResponseMessage.BORROWER_ERROR,
+                    null,
+                    true,
+                    "Erreur lors de la création de l'emprunteur '{}'",
+                    borrowerDTO != null ? borrowerDTO.getBorrowerUsername() : "null"
+            );
         }
     }
 
@@ -219,6 +259,18 @@ public class BorrowerServiceJpaImpl implements BorrowerService {
     @Override
     public ServiceResponse<BorrowerDTO> updateBorrower(Long id, BorrowerDTO borrowerDTO) {
         try {
+            // Vérification des données d'entrée
+            if (borrowerDTO == null) {
+                return ServiceResponse.logAndRespond(
+                        logService,
+                        ResponseCode.BAD_REQUEST,
+                        ResponseMessage.BORROWING_DTO_NULL,
+                        null,
+                        true,
+                        "Les données d'emprunteur sont nulles"
+                );
+            }
+
             Optional<Borrower> existingBorrowerOpt = borrowerRepository.findById(id);
 
             if (existingBorrowerOpt.isEmpty()) {
@@ -227,31 +279,18 @@ public class BorrowerServiceJpaImpl implements BorrowerService {
                         ResponseCode.NOT_FOUND,
                         ResponseMessage.BORROWER_NOT_FOUND,
                         null,
-                        false,
+                        true,
                         "L'emprunteur avec l'ID '{}' n'a pas été trouvé",
                         id
                 );
             }
 
-            ServiceResponse<Borrower> mappingResult = borrowerMapper.toEntity(borrowerDTO);
-
-            if (mappingResult.getData() == null) {
-                return ServiceResponse.logAndRespond(
-                        logService,
-                        ResponseCode.DATA_HANDLING_ERROR,
-                        ResponseMessage.DATA_HANDLING_ERROR,
-                        null,
-                        false,
-                        "Le mappage du BorrowerDTO pour l'ID '{}' a échoué. Données invalides",
-                        id
-                );
-            }
-
             Borrower existingBorrower = existingBorrowerOpt.get();
-            Borrower borrowerToUpdate = mappingResult.getData();
-            borrowerToUpdate.setId(existingBorrower.getId());
 
-            Borrower updatedBorrower = borrowerRepository.save(borrowerToUpdate);
+            // ✅ UTILISATION DE updateEntityFromDTO
+            borrowerMapper.updateEntityFromDTO(existingBorrower, borrowerDTO);
+
+            Borrower updatedBorrower = borrowerRepository.save(existingBorrower);
             BorrowerDTO updatedBorrowerDTO = borrowerMapper.toDTO(updatedBorrower);
 
             return ServiceResponse.logAndRespond(
@@ -264,7 +303,15 @@ public class BorrowerServiceJpaImpl implements BorrowerService {
                     updatedBorrower.getId()
             );
         } catch (Exception e) {
-            return ServiceResponse.handleException(logService, e, "Erreur lors de la mise à jour de l'emprunteur avec l'ID '{}'", id);
+            return ServiceResponse.logAndRespond(
+                    logService,
+                    ResponseCode.INTERNAL_ERROR,
+                    ResponseMessage.BORROWER_ERROR,
+                    null,
+                    true,
+                    "Erreur lors de la mise à jour de l'emprunteur avec l'ID '{}'",
+                    id
+            );
         }
     }
 
@@ -277,7 +324,7 @@ public class BorrowerServiceJpaImpl implements BorrowerService {
                         ResponseCode.NOT_FOUND,
                         ResponseMessage.BORROWER_NOT_FOUND,
                         null,
-                        false,
+                        true,
                         "L'emprunteur avec l'ID '{}' n'a pas été trouvé",
                         id
                 );
@@ -295,7 +342,84 @@ public class BorrowerServiceJpaImpl implements BorrowerService {
                     id
             );
         } catch (Exception e) {
-            return ServiceResponse.handleException(logService, e, "Erreur lors de la suppression de l'emprunteur avec l'ID '{}'", id);
+            return ServiceResponse.logAndRespond(
+                    logService,
+                    ResponseCode.INTERNAL_ERROR,
+                    ResponseMessage.BORROWER_ERROR,
+                    null,
+                    true,
+                    "Erreur lors de la suppression de l'emprunteur avec l'ID '{}'",
+                    id
+            );
+        }
+    }
+    
+    @Override
+    public ServiceResponse<List<BorrowerDTO>> getBorrowersByStatus(BookStatus status) {
+        try {
+            List<Borrower> borrowers = borrowerRepository.findByStatus(status);
+
+            if (borrowers.isEmpty()) {
+                return ServiceResponse.logAndRespond(
+                        logService,
+                        ResponseCode.NOT_FOUND,
+                        ResponseMessage.NO_BORROWINGS,
+                        null,
+                        false,
+                        "Aucun emprunteur trouvé avec le statut: '{}'",
+                        status
+                );
+            }
+
+            List<BorrowerDTO> borrowerDTOs = borrowers.stream()
+                    .map(borrowerMapper::toDTO)
+                    .toList();
+
+            return ServiceResponse.logAndRespond(
+                    logService,
+                    ResponseCode.SUCCESS,
+                    ResponseMessage.BORROWER_SUCCESS,
+                    borrowerDTOs,
+                    false,
+                    "{} emprunteur(s) trouvé(s) avec le statut '{}'",
+                    borrowerDTOs.size(),
+                    status
+            );
+        } catch (Exception e) {
+            return ServiceResponse.handleException(logService, e, "Erreur lors de la recherche des emprunteurs par statut: '{}'", status);
+        }
+    }
+    
+    @Override
+    public ServiceResponse<BorrowerDTO> getBorrowerByExactUsername(String username) {
+        try {
+            List<Borrower> borrowers = borrowerRepository.findByBorrowerUsername(username);
+
+            if (borrowers.isEmpty()) {
+                return ServiceResponse.logAndRespond(
+                        logService,
+                        ResponseCode.NOT_FOUND,
+                        ResponseMessage.NO_BORROWER_FOR_USERNAME,
+                        null,
+                        false,
+                        "Aucun emprunteur trouvé avec le nom d'utilisateur exact: '{}'",
+                        username
+                );
+            }
+
+            BorrowerDTO borrowerDTO = borrowerMapper.toDTO(borrowers.getFirst());
+
+            return ServiceResponse.logAndRespond(
+                    logService,
+                    ResponseCode.SUCCESS,
+                    ResponseMessage.BORROWER_SUCCESS,
+                    borrowerDTO,
+                    false,
+                    "Emprunteur trouvé avec le nom d'utilisateur exact: '{}'",
+                    username
+            );
+        } catch (Exception e) {
+            return ServiceResponse.handleException(logService, e, "Erreur lors de la recherche de l'emprunteur par nom d'utilisateur exact: '{}'", username);
         }
     }
 }

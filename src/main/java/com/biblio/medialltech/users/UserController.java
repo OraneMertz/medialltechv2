@@ -1,6 +1,7 @@
 package com.biblio.medialltech.users;
 
 import com.biblio.medialltech.logs.ServiceResponse;
+import com.biblio.medialltech.security.ChangePasswordDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,22 +16,22 @@ public class UserController {
     public UserController(UserService userService) {
         this.userService = userService;
     }
-    
+
     @PostMapping
     public ResponseEntity<ServiceResponse<UserDTO>> createUser(@RequestBody UserDTO userDTO) {
         return ResponseEntity.ok(userService.createUser(userDTO));
     }
-    
+
     @GetMapping
     public ResponseEntity<ServiceResponse<List<UserDTO>>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
-    
+
     @GetMapping("/{id}")
     public ResponseEntity<ServiceResponse<UserDTO>> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
-    
+
     @GetMapping("/username/{username}")
     public ResponseEntity<ServiceResponse<UserDTO>> getUserByUsername(@PathVariable String username) {
         return ResponseEntity.ok(userService.getUserByUsername(username));
@@ -49,10 +50,17 @@ public class UserController {
             @RequestBody UserDTO userDTO) {
         return ResponseEntity.ok(userService.updateUser(id, userDTO));
     }
-    
+
     @DeleteMapping("/{id}")
     public ResponseEntity<ServiceResponse<Boolean>> deleteUser(@PathVariable Long id) {
         return ResponseEntity.ok(userService.deleteUser(id));
+    }
+
+    @PutMapping("/{id}/change-password")
+    public ResponseEntity<ServiceResponse<Boolean>> changePassword(
+            @PathVariable Long id,
+            @RequestBody ChangePasswordDTO request) {
+        return ResponseEntity.ok(userService.changePassword(id, request));
     }
 
     @GetMapping("/exists/username/{username}")

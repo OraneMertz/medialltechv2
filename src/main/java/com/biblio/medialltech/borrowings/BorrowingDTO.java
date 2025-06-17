@@ -5,19 +5,19 @@ import java.time.LocalDate;
 public class BorrowingDTO {
     private Long id;
     private Long bookId;
-    private Long userId;
+    private String username;
     private LocalDate borrowDate;
     private LocalDate returnDate;
 
-    public BorrowingDTO() {}
-
-    public BorrowingDTO(Long id, Long bookId, Long userId, LocalDate borrowDate, LocalDate returnDate) {
+    public BorrowingDTO(Long id, Long bookId, String username, LocalDate borrowDate, LocalDate returnDate) {
         this.id = id;
         this.bookId = bookId;
-        this.userId = userId;
+        this.username = username;
         this.borrowDate = borrowDate;
         this.returnDate = returnDate;
     }
+
+    public BorrowingDTO() { }
 
     public Long getId() {
         return id;
@@ -35,12 +35,12 @@ public class BorrowingDTO {
         this.bookId = bookId;
     }
 
-    public Long getUserId() {
-        return userId;
+    public String getUsername() {
+        return username;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public LocalDate getBorrowDate() {
@@ -57,5 +57,16 @@ public class BorrowingDTO {
 
     public void setReturnDate(LocalDate returnDate) {
         this.returnDate = returnDate;
+    }
+
+    @Override
+    public String toString() {
+        return "BorrowingDTO{" +
+                "id=" + id +
+                ", bookId=" + bookId +
+                ", username='" + username + '\'' +
+                ", borrowDate=" + borrowDate +
+                ", returnDate=" + returnDate +
+                '}';
     }
 }

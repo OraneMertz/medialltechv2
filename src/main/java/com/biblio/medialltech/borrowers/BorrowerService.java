@@ -1,5 +1,6 @@
 package com.biblio.medialltech.borrowers;
 
+import com.biblio.medialltech.books.BookStatus;
 import com.biblio.medialltech.logs.ServiceResponse;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,12 +17,14 @@ public interface BorrowerService {
     ServiceResponse<List<BorrowerDTO>> getBorrowersByBookId(Long bookId);
 
     ServiceResponse<List<BorrowerDTO>> getBorrowersByCategory(Long categoryId);
-
-    @Transactional
+    
     ServiceResponse<BorrowerDTO> createBorrower(BorrowerDTO borrowerDTO);
-
-    @Transactional
+    
     ServiceResponse<BorrowerDTO> updateBorrower(Long id, BorrowerDTO borrowerDTO);
 
     ServiceResponse<Void> deleteBorrower(Long id);
+
+    ServiceResponse<List<BorrowerDTO>> getBorrowersByStatus(BookStatus status);
+
+    ServiceResponse<BorrowerDTO> getBorrowerByExactUsername(String username);
 }

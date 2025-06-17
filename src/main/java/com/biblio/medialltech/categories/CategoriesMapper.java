@@ -7,7 +7,6 @@ import com.biblio.medialltech.logs.ServiceResponse;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class CategoriesMapper {
@@ -18,53 +17,54 @@ public class CategoriesMapper {
         this.logService = logService;
     }
 
-    // Convertir une catégorie en CategoryDTO
-    public ServiceResponse<CategoriesDTO> toDTO(Categories categories) {
-        if (categories == null) {
-            logService.warn("Tentative de mappage d'une catégorie null en DTO.");
-            return ServiceResponse.error(ResponseCode.INVALID_DATA, ResponseMessage.CATEGORY_INVALID, null);
+    public CategoriesDTO toDTO(Categories category) {
+        if (category == null) {
+            logService.warn("Tentative de mapping d'une Categories nulle vers CategoriesDTO.");
+            return null;
         }
-
-        logService.info("Mappage de l'entité Category vers DTO pour la catégorie avec ID: {}", categories.getId());
 
         CategoriesDTO dto = new CategoriesDTO();
-        dto.setId(categories.getId());
-        dto.setName(categories.getName());
+        
+        dto.setId(category.getId());
+        dto.setName(category.getName());
 
-        return ServiceResponse.success(ResponseCode.SUCCESS, ResponseMessage.CATEGORY_SUCCESS, dto);
+        logService.info("Mapping réussi pour la catégorie ID : {}", category.getId());
+        return dto;
     }
 
-    // Convertir un CategoryDTO en catégorie
-    public ServiceResponse<Categories> toEntity(CategoriesDTO dto) {
-        if (dto == null) {
-            logService.warn("Tentative de mappage d'un CategoryDTO null en entité.");
-            return ServiceResponse.error(ResponseCode.INVALID_DATA, ResponseMessage.CATEGORY_INVALID, null);
+    public ServiceResponse<Categories> toEntity(CategoriesDTO categoryDTO) {
+        if (categoryDTO == null) {
+            logService.warn("CategoriesDTO est null.");
+            return ServiceResponse.errorNoData(ResponseCode.BAD_REQUEST, ResponseMessage.CATEGORY_NULL);
         }
 
-        logService.info("Mappage de CategoryDTO vers l'entité Category pour le DTO avec ID: {}", dto.getId());
+        // Validation des données requises
+        if (categoryDTO.getName() == null || categoryDTO.getName().trim().isEmpty()) {
+            logService.warn("CategoriesDTO invalide : nom manquant.");
+            return ServiceResponse.errorNoData(ResponseCode.BAD_REQUEST, ResponseMessage.CATEGORY_INVALID);
+        }
 
-        Categories categories = new Categories();
-        categories.setId(dto.getId());
-        categories.setName(dto.getName());
+        Categories category = new Categories();
+        category.setId(categoryDTO.getId());
+        category.setName(categoryDTO.getName().trim());
 
-        return ServiceResponse.success(ResponseCode.SUCCESS, ResponseMessage.CATEGORY_SUCCESS, categories);
+        // Note: Les livres seront associés dans le service si nécessaire
+        // car le mapper ne doit pas accéder aux repositories
+
+        logService.info("Mappage réussi de CategoriesDTO à Categories avec nom : {}", categoryDTO.getName());
+        return ServiceResponse.success(ResponseCode.SUCCESS, ResponseMessage.CATEGORY_SUCCESS, category);
     }
 
-    // Convertir une liste de catégories en liste de CategoryDTO
-    public ServiceResponse<List<CategoriesDTO>> toDTOList(List<Categories> categories) {
-        if (categories == null || categories.isEmpty()) {
-            logService.warn("Liste de catégories null ou vide lors du mappage vers une liste de CategoryDTO.");
-            return ServiceResponse.error(ResponseCode.INVALID_DATA, ResponseMessage.CATEGORY_NULL, null);
+    /**
+     * Convertir une liste de Categories en liste de CategoriesDTO
+     */
+    public List<CategoriesDTO> toDTOList(List<Categories> categories) {
+        if (categories == null) {
+            return null;
         }
 
-        logService.info("Mappage de la liste des entités Category vers une liste de CategoryDTO.");
-
-        List<CategoriesDTO> categoriesDTOS = categories.stream()
+        return categories.stream()
                 .map(this::toDTO)
-                .map(ServiceResponse::getData)
-                .collect(Collectors.toList());
-
-        return ServiceResponse.success(ResponseCode.SUCCESS, ResponseMessage.CATEGORY_SUCCESS, categoriesDTOS);
+                .toList();
     }
 }
-

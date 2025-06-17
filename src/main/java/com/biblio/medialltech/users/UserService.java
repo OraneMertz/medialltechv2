@@ -1,6 +1,7 @@
 package com.biblio.medialltech.users;
 
 import com.biblio.medialltech.logs.ServiceResponse;
+import com.biblio.medialltech.security.ChangePasswordDTO;
 
 import java.util.List;
 
@@ -13,6 +14,8 @@ public interface UserService {
     ServiceResponse<UserDTO> getUserByUsername(String username);
 
     ServiceResponse<UserDTO> authenticateUser(String username, String password);
+
+    ServiceResponse<Boolean> changePassword(Long userId, ChangePasswordDTO changePasswordDTO);
 
     ServiceResponse<UserDTO> createUser(UserDTO userDTO);
 

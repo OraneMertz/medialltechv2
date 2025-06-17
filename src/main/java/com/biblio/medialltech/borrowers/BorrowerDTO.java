@@ -1,32 +1,29 @@
 package com.biblio.medialltech.borrowers;
 
+import com.biblio.medialltech.books.BookStatus;
 import java.time.LocalDate;
 import java.util.List;
 
 public class BorrowerDTO {
 
+    private Long id;
     private Long bookId;
     private String title;
     private String author;
     private String image;
     private String borrowerUsername;
     private LocalDate borrowDate;
-    private List<Long> categories;
-    private String status;
+    private List<Long> categoryIds;
+    private BookStatus status;
 
     public BorrowerDTO() {}
 
-    public BorrowerDTO(Long bookId, String title, String author, String image,
-                       String borrowerUsername, LocalDate borrowDate,
-                       List<Long> categories, String status) {
-        this.bookId = bookId;
-        this.title = title;
-        this.author = author;
-        this.image = image;
-        this.borrowerUsername = borrowerUsername;
-        this.borrowDate = borrowDate;
-        this.categories = categories;
-        this.status = status;
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Long getBookId() {
@@ -77,19 +74,34 @@ public class BorrowerDTO {
         this.borrowDate = borrowDate;
     }
 
-    public List<Long> getCategories() {
-        return categories;
+    public List<Long> getCategoryIds() {
+        return categoryIds;
     }
 
-    public void setCategories(List<Long> categories) {
-        this.categories = categories;
+    public void setCategoryIds(List<Long> categoryIds) {
+        this.categoryIds = categoryIds;
     }
 
-    public String getStatus() {
+    public BookStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(BookStatus status) {
         this.status = status;
+    }
+
+    @Override
+    public String toString() {
+        return "BorrowerDTO{" +
+                "id=" + id +
+                ", bookId=" + bookId +
+                ", title='" + title + '\'' +
+                ", author='" + author + '\'' +
+                ", image='" + image + '\'' +
+                ", borrowerUsername='" + borrowerUsername + '\'' +
+                ", borrowDate=" + borrowDate +
+                ", categoryIds=" + categoryIds +
+                ", status=" + status +
+                '}';
     }
 }
