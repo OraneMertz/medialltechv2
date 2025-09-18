@@ -1,30 +1,16 @@
 package com.biblio.medialltech.books;
 
-import com.biblio.medialltech.logs.ServiceResponse;
-import jakarta.transaction.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.util.List;
 
 public interface BookService {
 
-    ServiceResponse<List<BookDTO>> getAllBooks();
+    List<BookDTO> getAllBooks();
 
-    ServiceResponse<BookDTO> getBookById(Long id);
+    BookDTO getBookById(Long id);
 
-    ServiceResponse<List<BookDTO>> getBooksByAuthor(String author);
+    BookDTO createBook(BookDTO bookDTO);
 
-    ServiceResponse<List<BookDTO>> getBookByCategory(Long categoryId);
+    BookDTO updateBook(Long id, BookDTO bookDTO);
 
-    ServiceResponse<List<BookDTO>> getBooksByBorrower(String borrowerUsername);
-
-    ServiceResponse<List<BookDTO>> getAvailableBooks();
-    
-    ServiceResponse<BookDTO> createBook(BookDTO bookDTO);
-
-    ServiceResponse<BookDTO> addImageToBook(Long bookId, String imageUrl);
-
-    ServiceResponse<BookDTO> updateBook(Long id, BookDTO bookDTO);
-
-    ServiceResponse<Void> deleteBook(Long id);
+    Long deleteBook(Long id);
 }

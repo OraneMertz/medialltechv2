@@ -13,16 +13,6 @@ public class BookDTO {
 
     public BookDTO() {}
 
-    public BookDTO(Long id, String title, String author, String image, List<Long> categoryIds, BookStatus status, String borrowerUsername) {
-        this.id = id;
-        this.title = title;
-        this.author = author;
-        this.image = image;
-        this.categoryIds = categoryIds;
-        this.status = status;
-        this.borrowerUsername = borrowerUsername;
-    }
-
     public Long getId() {
         return id;
     }
@@ -69,10 +59,6 @@ public class BookDTO {
 
     public void setStatus(BookStatus status) {
         this.status = status;
-    }
-
-    public String getBorrowerUsername() {
-        return borrowerUsername;
     }
 
     public void setBorrowerUsername(String borrowerUsername) {
