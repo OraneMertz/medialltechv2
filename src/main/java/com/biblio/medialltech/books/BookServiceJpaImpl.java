@@ -1,7 +1,7 @@
 package com.biblio.medialltech.books;
 
-import com.biblio.medialltech.categories.Categories;
-import com.biblio.medialltech.categories.CategoriesRepository;
+import com.biblio.medialltech.categories.Category;
+import com.biblio.medialltech.categories.CategoryRepository;
 import com.biblio.medialltech.logs.LogService;
 import com.biblio.medialltech.logs.ResponseCode;
 import com.biblio.medialltech.logs.ResponseMessage;
@@ -17,16 +17,16 @@ import java.util.stream.Collectors;
 public class BookServiceJpaImpl implements BookService {
 
     private final BookRepository bookRepository;
-    private final CategoriesRepository categoriesRepository;
+    private final CategoryRepository categoryRepository;
     private final BookMapper bookMapper;
     private final LogService logService;
 
     public BookServiceJpaImpl(BookRepository bookRepository,
-                              CategoriesRepository categoriesRepository,
+                              CategoryRepository categoryRepository,
                               BookMapper bookMapper,
                               LogService logService) {
         this.bookRepository = bookRepository;
-        this.categoriesRepository = categoriesRepository;
+        this.categoryRepository = categoryRepository;
         this.bookMapper = bookMapper;
         this.logService = logService;
     }

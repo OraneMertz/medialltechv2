@@ -1,6 +1,6 @@
 package com.biblio.medialltech.books;
 
-import com.biblio.medialltech.categories.Categories;
+import com.biblio.medialltech.categories.Category;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ public class Book {
             joinColumns = @JoinColumn(name = "book_id"),
             inverseJoinColumns = @JoinColumn(name = "category_id")
     )
-    private List<Categories> categories = new ArrayList<>();
+    private List<Category> categories = new ArrayList<>();
 
     public Book(String title, String author, String image, BookStatus status, String borrowerUsername) {
         this.title = title;
@@ -95,11 +95,11 @@ public class Book {
         this.borrowerUsername = borrowerUsername;
     }
 
-    public List<Categories> getCategories() {
+    public List<Category> getCategories() {
         return categories;
     }
 
-    public void setCategories(List<Categories> categories) {
+    public void setCategories(List<Category> categories) {
         this.categories = categories;
     }
 

@@ -1,6 +1,6 @@
 package com.biblio.medialltech.books;
 
-import com.biblio.medialltech.categories.Categories;
+import com.biblio.medialltech.categories.Category;
 import com.biblio.medialltech.logs.LogService;
 import com.biblio.medialltech.logs.ResponseCode;
 import com.biblio.medialltech.logs.ResponseMessage;
@@ -38,7 +38,7 @@ public class BookMapper {
         // Conversion des catégories en IDs
         if (book.getCategories() != null && !book.getCategories().isEmpty()) {
             List<Long> categoryIds = book.getCategories().stream()
-                    .map(Categories::getId)
+                    .map(Category::getId)
                     .collect(Collectors.toList());
             dto.setCategoryIds(categoryIds);
         }
