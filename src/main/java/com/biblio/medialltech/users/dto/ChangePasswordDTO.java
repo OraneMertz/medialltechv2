@@ -1,4 +1,4 @@
-package com.biblio.medialltech.security;
+package com.biblio.medialltech.users.dto;
 
 public class ChangePasswordDTO {
     private String currentPassword;

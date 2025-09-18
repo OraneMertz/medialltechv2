@@ -1,7 +1,8 @@
-package com.biblio.medialltech.users;
+package com.biblio.medialltech.users.service;
 
 import com.biblio.medialltech.logs.ServiceResponse;
-import com.biblio.medialltech.security.ChangePasswordDTO;
+import com.biblio.medialltech.users.dto.ChangePasswordDTO;
+import com.biblio.medialltech.users.dto.UserDTO;
 
 import java.util.List;
 
@@ -11,10 +12,6 @@ public interface UserService {
 
     ServiceResponse<UserDTO> getUserById(Long id);
 
-    ServiceResponse<UserDTO> getUserByUsername(String username);
-
-    ServiceResponse<UserDTO> authenticateUser(String username, String password);
-
     ServiceResponse<Boolean> changePassword(Long userId, ChangePasswordDTO changePasswordDTO);
 
     ServiceResponse<UserDTO> createUser(UserDTO userDTO);
@@ -23,7 +20,7 @@ public interface UserService {
 
     ServiceResponse<Boolean> deleteUser(Long id);
 
-    ServiceResponse<Boolean> isUsernameExists(String username);
-
     ServiceResponse<Boolean> isEmailExists(String email);
+
+    ServiceResponse<Boolean> isPseudoExists(String username);
 }
