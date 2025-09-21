@@ -1,7 +1,9 @@
 package com.biblio.medialltech.users;
 
 import com.biblio.medialltech.logs.ServiceResponse;
-import com.biblio.medialltech.security.ChangePasswordDTO;
+import com.biblio.medialltech.users.dto.ChangePasswordDTO;
+import com.biblio.medialltech.users.dto.UserDTO;
+import com.biblio.medialltech.users.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,18 +34,6 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
-    @GetMapping("/username/{username}")
-    public ResponseEntity<ServiceResponse<UserDTO>> getUserByUsername(@PathVariable String username) {
-        return ResponseEntity.ok(userService.getUserByUsername(username));
-    }
-
-    @PostMapping("/authenticate")
-    public ResponseEntity<ServiceResponse<UserDTO>> login(
-            @RequestParam String username,
-            @RequestParam String password) {
-        return ResponseEntity.ok(userService.authenticateUser(username, password));
-    }
-
     @PutMapping("/{id}")
     public ResponseEntity<ServiceResponse<UserDTO>> updateUser(
             @PathVariable Long id,
@@ -61,15 +51,5 @@ public class UserController {
             @PathVariable Long id,
             @RequestBody ChangePasswordDTO request) {
         return ResponseEntity.ok(userService.changePassword(id, request));
-    }
-
-    @GetMapping("/exists/username/{username}")
-    public ResponseEntity<ServiceResponse<Boolean>> isUsernameExists(@PathVariable String username) {
-        return ResponseEntity.ok(userService.isUsernameExists(username));
-    }
-
-    @GetMapping("/exists/email/{email}")
-    public ResponseEntity<ServiceResponse<Boolean>> isEmailExists(@PathVariable String email) {
-        return ResponseEntity.ok(userService.isEmailExists(email));
     }
 }

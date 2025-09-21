@@ -1,10 +1,13 @@
-package com.biblio.medialltech.users;
+package com.biblio.medialltech.users.service;
 
 import com.biblio.medialltech.logs.LogService;
 import com.biblio.medialltech.logs.ResponseCode;
 import com.biblio.medialltech.logs.ResponseMessage;
 import com.biblio.medialltech.logs.ServiceResponse;
-import com.biblio.medialltech.security.ChangePasswordDTO;
+import com.biblio.medialltech.users.UserRepository;
+import com.biblio.medialltech.users.dto.ChangePasswordDTO;
+import com.biblio.medialltech.users.dto.UserDTO;
+import com.biblio.medialltech.users.entity.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -93,86 +96,6 @@ public class UserServiceJpaImpl implements UserService {
     }
 
     @Override
-    public ServiceResponse<UserDTO> getUserByUsername(String username) {
-        try {
-            Optional<User> userOpt = userRepository.findByUsername(username);
-            return userOpt.map(user -> ServiceResponse.logAndRespond(
-                    logService,
-                    ResponseCode.SUCCESS,
-                    ResponseMessage.USER_SUCCESS,
-                    userMapper.toDTO(user),
-                    false,
-                    "Utilisateur trouvé avec le nom d'utilisateur : " + username
-            )).orElseGet(() -> ServiceResponse.logAndRespond(
-                    logService,
-                    ResponseCode.NOT_FOUND,
-                    ResponseMessage.USER_NOT_FOUND,
-                    null,
-                    true,
-                    "Utilisateur non trouvé avec le nom d'utilisateur : " + username
-            ));
-        } catch (Exception e) {
-            return ServiceResponse.handleException(
-                    logService,
-                    e,
-                    "Erreur lors de la récupération de l'utilisateur avec le nom d'utilisateur : " + username
-            );
-        }
-    }
-
-    @Override
-    public ServiceResponse<UserDTO> authenticateUser(String username, String password) {
-        try {
-            Optional<User> userEntityOpt = userRepository.findByUsername(username);
-
-            if (userEntityOpt.isEmpty()) {
-                return ServiceResponse.logAndRespond(
-                        logService,
-                        ResponseCode.NOT_FOUND,
-                        ResponseMessage.USER_NOT_FOUND,
-                        null,
-                        true,
-                        "Utilisateur non trouvé avec le nom : {}",
-                        username
-                );
-            }
-
-            User userEntity = userEntityOpt.get();
-
-            // Vérifie le mot de passe avec l'encoder
-            if (!passwordEncoder.matches(password, userEntity.getPassword())) {
-                return ServiceResponse.logAndRespond(
-                        logService,
-                        ResponseCode.UNAUTHORIZED,
-                        ResponseMessage.AUTHENTICATION_FAILED,
-                        null,
-                        true,
-                        "Mot de passe incorrect pour l'utilisateur : {}",
-                        username
-                );
-            }
-
-            return ServiceResponse.logAndRespond(
-                    logService,
-                    ResponseCode.SUCCESS,
-                    ResponseMessage.AUTHENTICATION_SUCCESS,
-                    userMapper.toDTO(userEntity),
-                    false,
-                    "Authentification réussie pour l'utilisateur : {}",
-                    username
-            );
-
-        } catch (Exception e) {
-            return ServiceResponse.handleException(
-                    logService,
-                    e,
-                    "Erreur lors de l'authentification de l'utilisateur : {}",
-                    username
-            );
-        }
-    }
-
-    @Override
     public ServiceResponse<Boolean> changePassword(Long userId, ChangePasswordDTO changePasswordDTO) {
         try {
             // Vérification des paramètres d'entrée
@@ -253,7 +176,7 @@ public class UserServiceJpaImpl implements UserService {
                     true,
                     false,
                     "Mot de passe changé avec succès pour l'utilisateur : {}",
-                    user.getUsername()
+                    user.getPseudo()
             );
 
         } catch (Exception e) {
@@ -285,7 +208,7 @@ public class UserServiceJpaImpl implements UserService {
             }
 
             // Vérifier si l'utilisateur avec le même nom d'utilisateur existe déjà
-            if (userRepository.existsByUsername(userDTO.getUsername())) {
+            if (userRepository.existsByPseudo(userDTO.getPseudo())) {
                 return ServiceResponse.logAndRespond(
                         logService,
                         ResponseCode.ALREADY_EXISTS,
@@ -293,7 +216,7 @@ public class UserServiceJpaImpl implements UserService {
                         null,
                         true,
                         "Le nom d'utilisateur '{}' existe déjà.",
-                        userDTO.getUsername()
+                        userDTO.getPseudo()
                 );
             }
 
@@ -325,7 +248,7 @@ public class UserServiceJpaImpl implements UserService {
                     userMapper.toDTO(savedUser),
                     false,
                     "Utilisateur créé avec succès : {}",
-                    savedUser.getUsername()
+                    savedUser.getPseudo()
             );
         } catch (Exception e) {
             assert userDTO != null;
@@ -336,11 +259,11 @@ public class UserServiceJpaImpl implements UserService {
                     null,
                     true,
                     "Erreur lors de la création de l'utilisateur avec le nom d'utilisateur '{}'",
-                    userDTO.getUsername()
+                    userDTO.getPseudo()
             );
         }
     }
-    
+
     @Override
     public ServiceResponse<UserDTO> updateUser(Long id, UserDTO userDTO) {
         try {
@@ -372,9 +295,9 @@ public class UserServiceJpaImpl implements UserService {
             User existingUser = userOpt.get();
 
             // Vérification des doublons de nom d'utilisateur et d'email (si modifiés)
-            if (userDTO.getUsername() != null &&
-                    !existingUser.getUsername().equals(userDTO.getUsername()) &&
-                    userRepository.existsByUsername(userDTO.getUsername())) {
+            if (userDTO.getPseudo() != null &&
+                    !existingUser.getPseudo().equals(userDTO.getPseudo()) &&
+                    userRepository.existsByPseudo(userDTO.getPseudo())) {
                 return ServiceResponse.logAndRespond(
                         logService,
                         ResponseCode.ALREADY_EXISTS,
@@ -382,7 +305,7 @@ public class UserServiceJpaImpl implements UserService {
                         null,
                         true,
                         "Nom d'utilisateur '{}' existe déjà.",
-                        userDTO.getUsername()
+                        userDTO.getPseudo()
                 );
             }
 
@@ -411,7 +334,7 @@ public class UserServiceJpaImpl implements UserService {
                     userMapper.toDTO(updatedUser),
                     false,
                     "Utilisateur mis à jour : {}",
-                    updatedUser.getUsername()
+                    updatedUser.getPseudo()
             );
         } catch (Exception e) {
             return ServiceResponse.logAndRespond(
@@ -463,9 +386,9 @@ public class UserServiceJpaImpl implements UserService {
     }
 
     @Override
-    public ServiceResponse<Boolean> isUsernameExists(String username) {
+    public ServiceResponse<Boolean> isPseudoExists(String pseudo) {
         try {
-            boolean exists = userRepository.existsByUsername(username);
+            boolean exists = userRepository.existsByPseudo(pseudo);
             return ServiceResponse.logAndRespond(
                     logService,
                     ResponseCode.SUCCESS,
@@ -473,14 +396,14 @@ public class UserServiceJpaImpl implements UserService {
                     exists,
                     false,
                     "Vérification du nom d'utilisateur '{}' : {}",
-                    username, exists ? "non disponible" : "disponible"
+                    pseudo, exists ? "non disponible" : "disponible"
             );
         } catch (Exception e) {
             return ServiceResponse.handleException(
                     logService,
                     e,
                     "Erreur lors de la vérification du nom d'utilisateur '{}'",
-                    username
+                    pseudo
             );
         }
     }

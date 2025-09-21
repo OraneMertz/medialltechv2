@@ -1,7 +1,7 @@
 package com.biblio.medialltech.books;
 
-import com.biblio.medialltech.logs.ServiceResponse;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,62 +18,57 @@ public class BookController {
 
     // Récupérer tous les livres
     @GetMapping
-    public ServiceResponse<List<BookDTO>> getAllBooks() {
-        return bookService.getAllBooks();
+    public ResponseEntity<List<BookDTO>> getAllBooks() {
+        List<BookDTO> bookDTOs = bookService.getAllBooks();
+        return ResponseEntity.ok(bookDTOs);
     }
 
     // Récupérer un livre par son ID
     @GetMapping("/{id}")
-    public ServiceResponse<BookDTO> getBookById(@PathVariable Long id) {
-        return bookService.getBookById(id);
-    }
+    public ResponseEntity<BookDTO> getBookById(@PathVariable Long id) {
+        BookDTO book = bookService.getBookById(id);
 
-    // Récupérer les livres par auteur
-    @GetMapping("/author/{author}")
-    public ServiceResponse<List<BookDTO>> getBooksByAuthor(@PathVariable String author) {
-        return bookService.getBooksByAuthor(author);
-    }
-
-    // Récupérer les livres par catégorie
-    @GetMapping("/category/{categoryId}")
-    public ServiceResponse<List<BookDTO>> getBooksByCategory(@PathVariable Long categoryId) {
-        return bookService.getBookByCategory(categoryId);
-    }
-
-    // Récupérer les livres d'un emprunteur
-    @GetMapping("/borrower/{borrowerUsername}")
-    public ServiceResponse<List<BookDTO>> getBooksByBorrower(@PathVariable String borrowerUsername) {
-        return bookService.getBooksByBorrower(borrowerUsername);
-    }
-
-    // Récupérer les livres disponibles
-    @GetMapping("/available")
-    public ServiceResponse<List<BookDTO>> getAvailableBooks() {
-        return bookService.getAvailableBooks();
+        if (book != null) {
+            return ResponseEntity.ok(book);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     // Créer un nouveau livre
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ServiceResponse<BookDTO> createBook(@RequestBody BookDTO bookDTO) {
-        return bookService.createBook(bookDTO);
-    }
+    public ResponseEntity<BookDTO> createBook(@RequestBody BookDTO bookDTO) {
+        BookDTO createdBook = bookService.createBook(bookDTO);
 
-    // Ajouter une image à un livre
-    @PostMapping("/{bookId}/image")
-    public ServiceResponse<BookDTO> addImageToBook(@PathVariable Long bookId, @RequestParam("file") String imageUrl) {
-        return bookService.addImageToBook(bookId, imageUrl);
+        if (createdBook != null) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdBook);
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     // Mettre à jour un livre
-    @PutMapping("/{id}")
-    public ServiceResponse<BookDTO> updateBook(@PathVariable Long id, @RequestBody BookDTO bookDTO) {
-        return bookService.updateBook(id, bookDTO);
+    @PatchMapping("/{id}")
+    public ResponseEntity<BookDTO> updateBook(@PathVariable Long id, @RequestBody BookDTO bookDTO) {
+        BookDTO updatedBook = bookService.updateBook(id, bookDTO);
+
+        if (updatedBook != null) {
+            return ResponseEntity.ok(updatedBook);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     // Supprimer un livre
     @DeleteMapping("/{id}")
-    public ServiceResponse<Void> deleteBook(@PathVariable Long id) {
-        return bookService.deleteBook(id);
+    public ResponseEntity<Long> deleteBook(@PathVariable Long id) {
+        Long deletedId = bookService.deleteBook(id);
+
+        if (deletedId != null) {
+            return ResponseEntity.ok(deletedId);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

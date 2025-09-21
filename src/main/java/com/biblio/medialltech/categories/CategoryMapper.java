@@ -6,24 +6,22 @@ import com.biblio.medialltech.logs.ResponseMessage;
 import com.biblio.medialltech.logs.ServiceResponse;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
-public class CategoriesMapper {
+public class CategoryMapper {
 
     private final LogService logService;
 
-    public CategoriesMapper(LogService logService) {
+    public CategoryMapper(LogService logService) {
         this.logService = logService;
     }
 
-    public CategoriesDTO toDTO(Categories category) {
+    public CategoryDTO toDTO(Category category) {
         if (category == null) {
             logService.warn("Tentative de mapping d'une Categories nulle vers CategoriesDTO.");
             return null;
         }
 
-        CategoriesDTO dto = new CategoriesDTO();
+        CategoryDTO dto = new CategoryDTO();
         
         dto.setId(category.getId());
         dto.setName(category.getName());
@@ -32,7 +30,7 @@ public class CategoriesMapper {
         return dto;
     }
 
-    public ServiceResponse<Categories> toEntity(CategoriesDTO categoryDTO) {
+    public ServiceResponse<Category> toEntity(CategoryDTO categoryDTO) {
         if (categoryDTO == null) {
             logService.warn("CategoriesDTO est null.");
             return ServiceResponse.errorNoData(ResponseCode.BAD_REQUEST, ResponseMessage.CATEGORY_NULL);
@@ -44,7 +42,7 @@ public class CategoriesMapper {
             return ServiceResponse.errorNoData(ResponseCode.BAD_REQUEST, ResponseMessage.CATEGORY_INVALID);
         }
 
-        Categories category = new Categories();
+        Category category = new Category();
         category.setId(categoryDTO.getId());
         category.setName(categoryDTO.getName().trim());
 
@@ -53,18 +51,5 @@ public class CategoriesMapper {
 
         logService.info("Mappage réussi de CategoriesDTO à Categories avec nom : {}", categoryDTO.getName());
         return ServiceResponse.success(ResponseCode.SUCCESS, ResponseMessage.CATEGORY_SUCCESS, category);
-    }
-
-    /**
-     * Convertir une liste de Categories en liste de CategoriesDTO
-     */
-    public List<CategoriesDTO> toDTOList(List<Categories> categories) {
-        if (categories == null) {
-            return null;
-        }
-
-        return categories.stream()
-                .map(this::toDTO)
-                .toList();
     }
 }

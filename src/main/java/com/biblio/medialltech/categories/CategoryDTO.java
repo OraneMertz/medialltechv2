@@ -1,10 +1,10 @@
 package com.biblio.medialltech.categories;
 
-public class CategoriesDTO {
+public class CategoryDTO {
     private Long id;
     private String name;
 
-    public CategoriesDTO() {
+    public CategoryDTO() {
     }
 
     public Long getId() {
@@ -25,7 +25,7 @@ public class CategoriesDTO {
 
     @Override
     public String toString() {
-        return "CategoriesDTO{" +
+        return "CategoryDTO{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 '}';

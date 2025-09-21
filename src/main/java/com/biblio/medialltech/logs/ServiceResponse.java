@@ -14,14 +14,15 @@ public class ServiceResponse<T> {
     private T data;
     private boolean error;
     private String logMessage;
-    
+
     public ServiceResponse(ResponseCode statusCode, ResponseMessage message, T data) {
         this.statusCode = statusCode;
         this.message = message;
         this.data = data;
     }
 
-    public ServiceResponse() {}
+    public ServiceResponse() {
+    }
 
     // Méthodes factory pour les réponses de succès
     public static <T> ServiceResponse<T> success(ResponseCode statusCode, ResponseMessage message, T data) {
@@ -48,14 +49,14 @@ public class ServiceResponse<T> {
     /**
      * Utilitaire centralisé pour enregistrer un message de log et renvoyer une réponse appropriée
      *
-     * @param <T> Type de données de la réponse
+     * @param <T>        Type de données de la réponse
      * @param logService Service de log à utiliser
      * @param statusCode Code de réponse
-     * @param message Message de réponse
-     * @param data Données à renvoyer (peut être null)
-     * @param error Indique si c'est une erreur (détermine le niveau de log)
+     * @param message    Message de réponse
+     * @param data       Données à renvoyer (peut être null)
+     * @param error      Indique si c'est une erreur (détermine le niveau de log)
      * @param logMessage Message à logger
-     * @param args Arguments à inclure dans le message de log
+     * @param args       Arguments à inclure dans le message de log
      * @return ServiceResponse avec les paramètres spécifiés
      */
     public static <T> ServiceResponse<T> logAndRespond(LogService logService,
@@ -108,7 +109,7 @@ public class ServiceResponse<T> {
         return response;
     }
 
-    
+
     public ResponseCode getStatusCode() {
         return statusCode;
     }

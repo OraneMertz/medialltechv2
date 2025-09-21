@@ -4,9 +4,8 @@ import com.biblio.medialltech.books.Book;
 import jakarta.persistence.*;
 import java.util.List;
 
-@Entity
-@Table(name = "categories")
-public class Categories {
+@Entity(name = "categories")
+public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,9 +17,9 @@ public class Categories {
     @ManyToMany(mappedBy = "categories")
     private List<Book> books;
 
-    public Categories() {}
+    public Category() {}
 
-    public Categories(Long id, String name, List<Book> books) {
+    public Category(Long id, String name, List<Book> books) {
         this.id = id;
         this.name = name;
         this.books = books;
