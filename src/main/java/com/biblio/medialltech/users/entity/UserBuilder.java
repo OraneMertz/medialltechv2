@@ -3,7 +3,7 @@ package com.biblio.medialltech.users.entity;
 import com.biblio.medialltech.users.Role;
 
 public class UserBuilder {
-    private Long id;
+    private String id;
     private String pseudo;
     private String email;
     private String password;
@@ -12,7 +12,7 @@ public class UserBuilder {
     private Boolean accountNonLocked;
     private Boolean credentialsNonExpired;
 
-    public UserBuilder withId(Long id) {
+    public UserBuilder withId(String id) {
         this.id = id;
         return this;
     }

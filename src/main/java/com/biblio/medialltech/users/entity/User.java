@@ -1,41 +1,44 @@
 package com.biblio.medialltech.users.entity;
 
 import com.biblio.medialltech.users.Role;
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-@Entity(name = "users")
+@Document(collection = "users")
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
-    @Column(nullable = false, unique = true)
+    @Field("pseudo")
+    @Indexed(unique = true)
     private String pseudo;
 
-    @Column(nullable = false, unique = true)
+    @Field("email")
+    @Indexed(unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Field("password")
     private String password;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Field("authorities")
     private Role authorities;
 
-    @Column()
+    @Field("account_non_expired")
     private Boolean accountNonExpired;
 
-    @Column()
+    @Field("account_non_locked")
     private Boolean accountNonLocked;
 
-    @Column()
+    @Field("credentials_non_expired")
     private Boolean credentialsNonExpired;
 
     public User() {
     }
 
-    public User(Long id, String pseudo, String email, String password, Role authorities, Boolean accountNonExpired, Boolean accountNonLocked, Boolean credentialsNonExpired) {
+    public User(String id, String pseudo, String email, String password, Role authorities, Boolean accountNonExpired, Boolean accountNonLocked, Boolean credentialsNonExpired) {
         this.id = id;
         this.pseudo = pseudo;
         this.email = email;
@@ -46,11 +49,11 @@ public class User {
         this.credentialsNonExpired = credentialsNonExpired;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

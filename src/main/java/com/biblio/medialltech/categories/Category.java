@@ -1,35 +1,36 @@
 package com.biblio.medialltech.categories;
 
-import com.biblio.medialltech.books.Book;
-import jakarta.persistence.*;
-import java.util.List;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-@Entity(name = "categories")
+@Document(collection = "categories")
 public class Category {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
-    @Column(nullable = false, unique = true)
+    @Field("name")
+    @Indexed(unique = true)
     private String name;
 
-    @ManyToMany(mappedBy = "categories")
-    private List<Book> books;
+    // Note: Pas besoin de la relation @ManyToMany mappedBy avec MongoDB
+    // Les livres contiennent directement leurs catégories
 
-    public Category() {}
-
-    public Category(Long id, String name, List<Book> books) {
-        this.id = id;
-        this.name = name;
-        this.books = books;
+    public Category() {
     }
 
-    public Long getId() {
+    public Category(String id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -41,11 +42,11 @@ public class Category {
         this.name = name;
     }
 
-    public List<Book> getBooks() {
-        return books;
-    }
-
-    public void setBooks(List<Book> books) {
-        this.books = books;
+    @Override
+    public String toString() {
+        return "Category{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                '}';
     }
 }

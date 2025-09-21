@@ -33,6 +33,9 @@ public class UserMapper {
         dto.setPseudo(user.getPseudo());
         dto.setEmail(user.getEmail());
         dto.setAuthorities(user.getAuthorities());
+        dto.setAccountNonExpired(user.getAccountNonExpired());
+        dto.setAccountNonLocked(user.getAccountNonLocked());
+        dto.setCredentialsNonExpired(user.getCredentialsNonExpired());
 
         return dto;
     }
@@ -59,6 +62,9 @@ public class UserMapper {
                 .withPseudo(userDTO.getPseudo().trim())
                 .withEmail(userDTO.getEmail().trim())
                 .withAuthorities(userDTO.getAuthorities())
+                .withAccountNonExpired(userDTO.getAccountNonExpired())
+                .withAccountNonLocked(userDTO.getAccountNonLocked())
+                .withCredentialsNonExpired(userDTO.getCredentialsNonExpired())
                 .createUser();
 
         // Chiffrement automatique du password si fourni
@@ -91,6 +97,18 @@ public class UserMapper {
 
         if (dto.getAuthorities() != null) {
             user.setAuthorities(dto.getAuthorities());
+        }
+
+        if (dto.getAccountNonExpired() != null) {
+            user.setAccountNonExpired(dto.getAccountNonExpired());
+        }
+
+        if (dto.getAccountNonLocked() != null) {
+            user.setAccountNonLocked(dto.getAccountNonLocked());
+        }
+
+        if (dto.getCredentialsNonExpired() != null) {
+            user.setCredentialsNonExpired(dto.getCredentialsNonExpired());
         }
 
         // Gestion du password avec chiffrement

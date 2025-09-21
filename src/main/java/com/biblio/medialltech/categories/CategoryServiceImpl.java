@@ -10,15 +10,15 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class CategoryServiceJpaImpl implements CategoryService {
+public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
     private final LogService logService;
 
-    public CategoryServiceJpaImpl(CategoryRepository categoryRepository,
-                                  CategoryMapper categoryMapper,
-                                  LogService logService) {
+    public CategoryServiceImpl(CategoryRepository categoryRepository,
+                               CategoryMapper categoryMapper,
+                               LogService logService) {
         this.categoryRepository = categoryRepository;
         this.categoryMapper = categoryMapper;
         this.logService = logService;
@@ -42,7 +42,7 @@ public class CategoryServiceJpaImpl implements CategoryService {
     }
 
     @Override
-    public CategoryDTO getCategoryById(Long id) {
+    public CategoryDTO getCategoryById(String id) {
         try {
             Optional<Category> categoryOpt = categoryRepository.findById(id);
 
@@ -83,7 +83,7 @@ public class CategoryServiceJpaImpl implements CategoryService {
 
     @Transactional
     @Override
-    public CategoryDTO updateCategory(Long id, CategoryDTO categoryDTO) {
+    public CategoryDTO updateCategory(String id, CategoryDTO categoryDTO) {
         try {
             // Vérification des données d'entrée
             if (categoryDTO == null) {
@@ -148,7 +148,7 @@ public class CategoryServiceJpaImpl implements CategoryService {
     }
 
     @Override
-    public Long deleteCategory(Long id) {
+    public String deleteCategory(String id) {
         try {
             if (!categoryRepository.existsById(id)) {
                 logService.warn("Échec suppression : Catégorie non trouvée avec ID {}", id);

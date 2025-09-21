@@ -6,11 +6,11 @@ public interface BookService {
 
     List<BookDTO> getAllBooks();
 
-    BookDTO getBookById(Long id);
+    BookDTO getBookById(String id);
 
     BookDTO createBook(BookDTO bookDTO);
 
-    BookDTO updateBook(Long id, BookDTO bookDTO);
+    BookDTO updateBook(String id, BookDTO bookDTO);
 
-    Long deleteBook(Long id);
+    String deleteBook(String id);
 }

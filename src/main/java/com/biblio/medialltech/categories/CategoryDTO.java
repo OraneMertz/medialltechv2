@@ -1,17 +1,17 @@
 package com.biblio.medialltech.categories;
 
 public class CategoryDTO {
-    private Long id;
+    private String id;
     private String name;
 
     public CategoryDTO() {
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -26,7 +26,7 @@ public class CategoryDTO {
     @Override
     public String toString() {
         return "CategoryDTO{" +
-                "id=" + id +
+                "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 '}';
     }

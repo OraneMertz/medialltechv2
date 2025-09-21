@@ -23,7 +23,7 @@ public class CategoryController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CategoryDTO> getCategoryById(@PathVariable Long id) {
+    public ResponseEntity<CategoryDTO> getCategoryById(@PathVariable String id) {
         CategoryDTO category = categoryService.getCategoryById(id);
 
         if (category != null) {
@@ -57,7 +57,7 @@ public class CategoryController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CategoryDTO> updateCategory(@PathVariable Long id, @RequestBody CategoryDTO categoryDTO) {
+    public ResponseEntity<CategoryDTO> updateCategory(@PathVariable String id, @RequestBody CategoryDTO categoryDTO) {
         CategoryDTO updatedCategory = categoryService.updateCategory(id, categoryDTO);
 
         if (updatedCategory != null) {
@@ -68,8 +68,8 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Long> deleteCategory(@PathVariable Long id) {
-        Long deletedId = categoryService.deleteCategory(id);
+    public ResponseEntity<String> deleteCategory(@PathVariable String id) {
+        String deletedId = categoryService.deleteCategory(id);
 
         if (deletedId != null) {
             return ResponseEntity.ok(deletedId);

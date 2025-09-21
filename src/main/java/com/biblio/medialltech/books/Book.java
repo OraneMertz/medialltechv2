@@ -1,40 +1,35 @@
 package com.biblio.medialltech.books;
 
 import com.biblio.medialltech.categories.Category;
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity(name = "books")
+@Document(collection = "books")
 public class Book {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
-    @Column(nullable = false)
+    @Field("title")
     private String title;
 
-    @Column(nullable = false)
+    @Field("author")
     private String author;
 
-    @Column
+    @Field("image")
     private String image;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Field("status")
     private BookStatus status = BookStatus.AVAILABLE;
 
-    @Column(name = "borrower_username")
+    @Field("borrower_username")
     private String borrowerUsername;
 
-    @ManyToMany
-    @JoinTable(
-            name = "book_category",
-            joinColumns = @JoinColumn(name = "book_id"),
-            inverseJoinColumns = @JoinColumn(name = "category_id")
-    )
+    @Field("categories")
     private List<Category> categories = new ArrayList<>();
 
     public Book(String title, String author, String image, BookStatus status, String borrowerUsername) {
@@ -44,14 +39,15 @@ public class Book {
         this.status = status;
         this.borrowerUsername = borrowerUsername;
     }
-    
-    public Book() {}
 
-    public Long getId() {
+    public Book() {
+    }
+
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -102,7 +98,4 @@ public class Book {
     public void setCategories(List<Category> categories) {
         this.categories = categories;
     }
-
-
-    
 }

@@ -6,8 +6,8 @@ import com.biblio.medialltech.logs.LogService;
 import com.biblio.medialltech.logs.ResponseCode;
 import com.biblio.medialltech.logs.ResponseMessage;
 import com.biblio.medialltech.logs.ServiceResponse;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,17 +15,17 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class BookServiceJpaImpl implements BookService {
+public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepository;
     private final CategoryRepository categoryRepository;
     private final BookMapper bookMapper;
     private final LogService logService;
 
-    public BookServiceJpaImpl(BookRepository bookRepository,
-                              CategoryRepository categoryRepository,
-                              BookMapper bookMapper,
-                              LogService logService) {
+    public BookServiceImpl(BookRepository bookRepository,
+                           CategoryRepository categoryRepository,
+                           BookMapper bookMapper,
+                           LogService logService) {
         this.bookRepository = bookRepository;
         this.categoryRepository = categoryRepository;
         this.bookMapper = bookMapper;
@@ -50,7 +50,7 @@ public class BookServiceJpaImpl implements BookService {
     }
 
     @Override
-    public BookDTO getBookById(Long id) {
+    public BookDTO getBookById(String id) { // Changé de Long à String
         try {
             Optional<Book> bookOpt = bookRepository.findById(id);
 
@@ -69,7 +69,7 @@ public class BookServiceJpaImpl implements BookService {
         }
     }
 
-    @Transactional
+    @Transactional // MongoDB supporte les transactions depuis la v4.0
     @Override
     public BookDTO createBook(BookDTO bookDTO) {
         try {
@@ -150,7 +150,7 @@ public class BookServiceJpaImpl implements BookService {
 
     @Transactional
     @Override
-    public BookDTO updateBook(Long id, BookDTO bookDTO) {
+    public BookDTO updateBook(String id, BookDTO bookDTO) { // Changé de Long à String
         try {
             // Vérification des données d'entrée
             if (bookDTO == null) {
@@ -170,14 +170,11 @@ public class BookServiceJpaImpl implements BookService {
             // Utiliser la méthode du mapper pour mettre à jour
             bookMapper.updateEntityFromDTO(existingBook, bookDTO);
 
-            // TODO : Vérifier le fonctionnement
-            //      - Dans le cas où l'on veut supprimer toutes les catégories, cela ne fonctionne pas
-            //      - Pratique pour le cas de l'emprunt, on l'on envoi que le nom de la personne
             // Mettre à jour les catégories si nécessaire
             if (bookDTO.getCategoryIds() != null) {
                 if (bookDTO.getCategoryIds().isEmpty()) {
                     // Supprimer toutes les catégories
-                    existingBook.setCategories(null);
+                    existingBook.setCategories(new ArrayList<>());
                     logService.info("Toutes les catégories supprimées du livre ID : {}", id);
                 } else {
                     // Associer les nouvelles catégories
@@ -206,7 +203,7 @@ public class BookServiceJpaImpl implements BookService {
     }
 
     @Override
-    public Long deleteBook(Long id) {
+    public String deleteBook(String id) { // Changé de Long à String
         try {
             if (!bookRepository.existsById(id)) {
                 ServiceResponse.handleException(logService, null, "Le livre avec l'ID '{}' n'a pas été trouvé", id);
@@ -225,10 +222,10 @@ public class BookServiceJpaImpl implements BookService {
     /**
      * Méthode privée pour valider et récupérer les catégories par leurs IDs
      *
-     * @param categoryIds Liste des IDs des catégories
+     * @param categoryIds Liste des IDs des catégories (String maintenant)
      * @return ServiceResponse contenant la liste des catégories ou une erreur
      */
-    private ServiceResponse<List<Category>> validateAndGetCategories(List<Long> categoryIds) {
+    private ServiceResponse<List<Category>> validateAndGetCategories(List<String> categoryIds) {
         if (categoryIds == null || categoryIds.isEmpty()) {
             return ServiceResponse.logAndRespond(
                     logService,
@@ -245,11 +242,11 @@ public class BookServiceJpaImpl implements BookService {
 
         // Vérifier que toutes les catégories existent
         if (categories.size() != categoryIds.size()) {
-            List<Long> foundIds = categories.stream()
+            List<String> foundIds = categories.stream()
                     .map(Category::getId)
                     .toList();
 
-            List<Long> missingIds = categoryIds.stream()
+            List<String> missingIds = categoryIds.stream()
                     .filter(id -> !foundIds.contains(id))
                     .collect(Collectors.toList());
 

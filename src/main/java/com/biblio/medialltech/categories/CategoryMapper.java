@@ -22,7 +22,7 @@ public class CategoryMapper {
         }
 
         CategoryDTO dto = new CategoryDTO();
-        
+
         dto.setId(category.getId());
         dto.setName(category.getName());
 
@@ -45,9 +45,6 @@ public class CategoryMapper {
         Category category = new Category();
         category.setId(categoryDTO.getId());
         category.setName(categoryDTO.getName().trim());
-
-        // Note: Les livres seront associés dans le service si nécessaire
-        // car le mapper ne doit pas accéder aux repositories
 
         logService.info("Mappage réussi de CategoriesDTO à Categories avec nom : {}", categoryDTO.getName());
         return ServiceResponse.success(ResponseCode.SUCCESS, ResponseMessage.CATEGORY_SUCCESS, category);

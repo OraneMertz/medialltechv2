@@ -10,15 +10,15 @@ public interface UserService {
 
     ServiceResponse<List<UserDTO>> getAllUsers();
 
-    ServiceResponse<UserDTO> getUserById(Long id);
+    ServiceResponse<UserDTO> getUserById(String id);
 
-    ServiceResponse<Boolean> changePassword(Long userId, ChangePasswordDTO changePasswordDTO);
+    ServiceResponse<Boolean> changePassword(String userId, ChangePasswordDTO changePasswordDTO);
 
     ServiceResponse<UserDTO> createUser(UserDTO userDTO);
 
-    ServiceResponse<UserDTO> updateUser(Long id, UserDTO userDTO);
+    ServiceResponse<UserDTO> updateUser(String id, UserDTO userDTO);
 
-    ServiceResponse<Boolean> deleteUser(Long id);
+    ServiceResponse<Boolean> deleteUser(String id);
 
     ServiceResponse<Boolean> isEmailExists(String email);
 

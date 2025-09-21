@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class UserDTO {
-    private Long id;
+    private String id;
     private String pseudo;
     private String email;
     private Role authorities;
@@ -21,11 +21,11 @@ public class UserDTO {
     public UserDTO() {
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -88,7 +88,7 @@ public class UserDTO {
     @Override
     public String toString() {
         return "UserDTO{" +
-                "id=" + id +
+                "id='" + id + '\'' +
                 ", pseudo='" + pseudo + '\'' +
                 ", email='" + email + '\'' +
                 ", authorities=" + authorities +

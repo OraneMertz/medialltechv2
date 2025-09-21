@@ -16,16 +16,14 @@ public class BookController {
         this.bookService = bookService;
     }
 
-    // Récupérer tous les livres
     @GetMapping
     public ResponseEntity<List<BookDTO>> getAllBooks() {
         List<BookDTO> bookDTOs = bookService.getAllBooks();
         return ResponseEntity.ok(bookDTOs);
     }
 
-    // Récupérer un livre par son ID
     @GetMapping("/{id}")
-    public ResponseEntity<BookDTO> getBookById(@PathVariable Long id) {
+    public ResponseEntity<BookDTO> getBookById(@PathVariable String id) {
         BookDTO book = bookService.getBookById(id);
 
         if (book != null) {
@@ -35,7 +33,6 @@ public class BookController {
         }
     }
 
-    // Créer un nouveau livre
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<BookDTO> createBook(@RequestBody BookDTO bookDTO) {
@@ -48,9 +45,8 @@ public class BookController {
         }
     }
 
-    // Mettre à jour un livre
     @PatchMapping("/{id}")
-    public ResponseEntity<BookDTO> updateBook(@PathVariable Long id, @RequestBody BookDTO bookDTO) {
+    public ResponseEntity<BookDTO> updateBook(@PathVariable String id, @RequestBody BookDTO bookDTO) {
         BookDTO updatedBook = bookService.updateBook(id, bookDTO);
 
         if (updatedBook != null) {
@@ -60,10 +56,9 @@ public class BookController {
         }
     }
 
-    // Supprimer un livre
     @DeleteMapping("/{id}")
-    public ResponseEntity<Long> deleteBook(@PathVariable Long id) {
-        Long deletedId = bookService.deleteBook(id);
+    public ResponseEntity<String> deleteBook(@PathVariable String id) {
+        String deletedId = bookService.deleteBook(id);
 
         if (deletedId != null) {
             return ResponseEntity.ok(deletedId);

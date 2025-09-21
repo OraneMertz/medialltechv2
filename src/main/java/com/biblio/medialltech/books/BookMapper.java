@@ -33,11 +33,11 @@ public class BookMapper {
         dto.setAuthor(book.getAuthor());
         dto.setImage(book.getImage());
         dto.setStatus(book.getStatus());
-        dto.setBorrowerUsername(book.getBorrowerUsername()); // Nouveau champ
+        dto.setBorrowerUsername(book.getBorrowerUsername());
 
         // Conversion des catégories en IDs
         if (book.getCategories() != null && !book.getCategories().isEmpty()) {
-            List<Long> categoryIds = book.getCategories().stream()
+            List<String> categoryIds = book.getCategories().stream()
                     .map(Category::getId)
                     .collect(Collectors.toList());
             dto.setCategoryIds(categoryIds);
@@ -84,9 +84,6 @@ public class BookMapper {
         return ServiceResponse.success(ResponseCode.SUCCESS, ResponseMessage.BOOK_SUCCESS, book);
     }
 
-    /**
-     * Méthode pour mettre à jour un Book existant avec les données du DTO
-     */
     public void updateEntityFromDTO(Book book, BookDTO dto) {
         if (book == null || dto == null) {
             logService.warn("Impossible de mettre à jour : book ou dto est null");
@@ -107,6 +104,10 @@ public class BookMapper {
 
         if (dto.getStatus() != null) {
             book.setStatus(dto.getStatus());
+        }
+
+        if (dto.getBorrowerUsername() != null) {
+            book.setBorrowerUsername(dto.getBorrowerUsername());
         }
 
         logService.info("Mise à jour de l'entité Book avec ID : {}", book.getId());

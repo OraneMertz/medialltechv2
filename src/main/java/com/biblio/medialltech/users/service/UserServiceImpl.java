@@ -15,14 +15,14 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class UserServiceJpaImpl implements UserService {
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final LogService logService;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    public UserServiceJpaImpl(UserRepository userRepository, UserMapper userMapper, LogService logService) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, LogService logService) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.logService = logService;
@@ -68,7 +68,7 @@ public class UserServiceJpaImpl implements UserService {
     }
 
     @Override
-    public ServiceResponse<UserDTO> getUserById(Long id) {
+    public ServiceResponse<UserDTO> getUserById(String id) {
         try {
             Optional<User> userOpt = userRepository.findById(id);
             return userOpt.map(user -> ServiceResponse.logAndRespond(
@@ -96,7 +96,7 @@ public class UserServiceJpaImpl implements UserService {
     }
 
     @Override
-    public ServiceResponse<Boolean> changePassword(Long userId, ChangePasswordDTO changePasswordDTO) {
+    public ServiceResponse<Boolean> changePassword(String userId, ChangePasswordDTO changePasswordDTO) {
         try {
             // Vérification des paramètres d'entrée
             if (changePasswordDTO == null) {
@@ -265,7 +265,7 @@ public class UserServiceJpaImpl implements UserService {
     }
 
     @Override
-    public ServiceResponse<UserDTO> updateUser(Long id, UserDTO userDTO) {
+    public ServiceResponse<UserDTO> updateUser(String id, UserDTO userDTO) {
         try {
             // Vérification des données d'entrée
             if (userDTO == null) {
@@ -323,7 +323,7 @@ public class UserServiceJpaImpl implements UserService {
                 );
             }
 
-            // ✅ UTILISATION DE updateEntityFromDTO
+            // Utilisation de updateEntityFromDTO
             userMapper.updateEntityFromDTO(existingUser, userDTO);
 
             User updatedUser = userRepository.save(existingUser);
@@ -350,7 +350,7 @@ public class UserServiceJpaImpl implements UserService {
     }
 
     @Override
-    public ServiceResponse<Boolean> deleteUser(Long id) {
+    public ServiceResponse<Boolean> deleteUser(String id) {
         try {
             if (!userRepository.existsById(id)) {
                 return ServiceResponse.logAndRespond(

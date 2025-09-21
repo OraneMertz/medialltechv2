@@ -30,25 +30,25 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ServiceResponse<UserDTO>> getUserById(@PathVariable Long id) {
+    public ResponseEntity<ServiceResponse<UserDTO>> getUserById(@PathVariable String id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ServiceResponse<UserDTO>> updateUser(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestBody UserDTO userDTO) {
         return ResponseEntity.ok(userService.updateUser(id, userDTO));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ServiceResponse<Boolean>> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<ServiceResponse<Boolean>> deleteUser(@PathVariable String id) {
         return ResponseEntity.ok(userService.deleteUser(id));
     }
 
     @PutMapping("/{id}/change-password")
     public ResponseEntity<ServiceResponse<Boolean>> changePassword(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestBody ChangePasswordDTO request) {
         return ResponseEntity.ok(userService.changePassword(id, request));
     }

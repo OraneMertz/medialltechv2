@@ -3,21 +3,22 @@ package com.biblio.medialltech.books;
 import java.util.List;
 
 public class BookDTO {
-    private Long id;
+    private String id;
     private String title;
     private String author;
     private String image;
-    private List<Long> categoryIds;
+    private List<String> categoryIds;
     private BookStatus status;
     private String borrowerUsername;
 
-    public BookDTO() {}
+    public BookDTO() {
+    }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -45,11 +46,11 @@ public class BookDTO {
         this.image = image;
     }
 
-    public List<Long> getCategoryIds() {
+    public List<String> getCategoryIds() {
         return categoryIds;
     }
 
-    public void setCategoryIds(List<Long> categoryIds) {
+    public void setCategoryIds(List<String> categoryIds) {
         this.categoryIds = categoryIds;
     }
 
@@ -61,6 +62,10 @@ public class BookDTO {
         this.status = status;
     }
 
+    public String getBorrowerUsername() {
+        return borrowerUsername;
+    }
+
     public void setBorrowerUsername(String borrowerUsername) {
         this.borrowerUsername = borrowerUsername;
     }
@@ -68,7 +73,7 @@ public class BookDTO {
     @Override
     public String toString() {
         return "BookDTO{" +
-                "id=" + id +
+                "id='" + id + '\'' +
                 ", title='" + title + '\'' +
                 ", author='" + author + '\'' +
                 ", image='" + image + '\'' +
