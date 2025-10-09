@@ -101,13 +101,13 @@ public class BookServiceImpl implements BookService {
 
             // Associer les catégories valides au livre envoyé
             if (bookDTO.getCategoryIds() != null && !bookDTO.getCategoryIds().isEmpty()) {
-                ServiceResponse<List<Category>> categoriesResult = validateAndGetCategories(bookDTO.getCategoryIds());
-                if (categoriesResult.isError()) {
+                ServiceResponse<List<String>> validationResult = validateCategoryIds(bookDTO.getCategoryIds());
+                if (validationResult.isError()) {
                     logService.error("Erreur lors de la validation des catégories");
                     return null;
                 }
 
-                book.setCategories(categoriesResult.getData());
+                book.setCategories(validationResult.getData());
                 logService.info("Catégories associées au livre '{}' : {}",
                         bookDTO.getTitle(), bookDTO.getCategoryIds());
             } else {
@@ -178,7 +178,7 @@ public class BookServiceImpl implements BookService {
                     logService.info("Toutes les catégories supprimées du livre ID : {}", id);
                 } else {
                     // Associer les nouvelles catégories
-                    ServiceResponse<List<Category>> categoriesResult = validateAndGetCategories(bookDTO.getCategoryIds());
+                    ServiceResponse<List<String>> categoriesResult = validateCategoryIds(bookDTO.getCategoryIds());
                     if (categoriesResult.isError()) {
                         logService.error("Erreur lors de la validation des catégories");
                         return null;
@@ -200,6 +200,56 @@ public class BookServiceImpl implements BookService {
             ServiceResponse.handleException(logService, e, "Erreur lors de la mise à jour du livre avec l'ID '{}'", id);
             return null;
         }
+    }
+
+    /**
+     * Valider les IDs de catégories et retourner les IDs (pas les objets Category)
+     */
+    private ServiceResponse<List<String>> validateCategoryIds(List<String> categoryIds) {
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            return ServiceResponse.logAndRespond(
+                    logService,
+                    ResponseCode.BAD_REQUEST,
+                    ResponseMessage.INVALID_INPUT,
+                    null,
+                    true,
+                    "Liste des IDs de catégories vide ou nulle"
+            );
+        }
+
+        // Récupérer les catégories par IDs pour vérifier qu'elles existent
+        List<Category> categories = categoryRepository.findAllById(categoryIds);
+
+        // Vérifier que toutes les catégories existent
+        if (categories.size() != categoryIds.size()) {
+            List<String> foundIds = categories.stream()
+                    .map(Category::getId)
+                    .toList();
+
+            List<String> missingIds = categoryIds.stream()
+                    .filter(id -> !foundIds.contains(id))
+                    .collect(Collectors.toList());
+
+            return ServiceResponse.logAndRespond(
+                    logService,
+                    ResponseCode.NOT_FOUND,
+                    ResponseMessage.CATEGORY_NOT_FOUND,
+                    null,
+                    true,
+                    "Catégories non trouvées avec les IDs : {}",
+                    missingIds
+            );
+        }
+
+        return ServiceResponse.logAndRespond(
+                logService,
+                ResponseCode.SUCCESS,
+                ResponseMessage.CATEGORY_SUCCESS,
+                categoryIds,  // Retourner les IDs directement
+                false,
+                "Validation réussie pour {} catégorie(s)",
+                categories.size()
+        );
     }
 
     @Override

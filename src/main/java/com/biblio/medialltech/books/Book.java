@@ -1,6 +1,5 @@
 package com.biblio.medialltech.books;
 
-import com.biblio.medialltech.categories.Category;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -29,8 +28,8 @@ public class Book {
     @Field("borrower_username")
     private String borrowerUsername;
 
-    @Field("categories")
-    private List<Category> categories = new ArrayList<>();
+    @Field("category_ids")
+    private List<String> categories = new ArrayList<>();
 
     public Book(String title, String author, String image, BookStatus status, String borrowerUsername) {
         this.title = title;
@@ -91,11 +90,11 @@ public class Book {
         this.borrowerUsername = borrowerUsername;
     }
 
-    public List<Category> getCategories() {
+    public List<String> getCategories() {
         return categories;
     }
 
-    public void setCategories(List<Category> categories) {
+    public void setCategories(List<String> categories) {
         this.categories = categories;
     }
 }

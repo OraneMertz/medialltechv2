@@ -1,14 +1,10 @@
 package com.biblio.medialltech.books;
 
-import com.biblio.medialltech.categories.Category;
 import com.biblio.medialltech.logs.LogService;
 import com.biblio.medialltech.logs.ResponseCode;
 import com.biblio.medialltech.logs.ResponseMessage;
 import com.biblio.medialltech.logs.ServiceResponse;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class BookMapper {
@@ -19,12 +15,27 @@ public class BookMapper {
         this.logService = logService;
     }
 
-    public BookDTO toDTO(Book book) {
-        if (book == null) {
-            logService.warn("Tentative de mapping d'un Book nul vers BookDTO.");
-            return null;
+    private static Book getBook(BookDTO bookDTO) {
+        Book book = new Book();
+        book.setId(bookDTO.getId());
+        book.setTitle(bookDTO.getTitle().trim());
+        book.setAuthor(bookDTO.getAuthor().trim());
+        book.setImage(bookDTO.getImage());
+
+        if (bookDTO.getCategoryIds() != null) {
+            book.setCategories(bookDTO.getCategoryIds());
         }
 
+        // Définir le statut (AVAILABLE par défaut si non spécifié)
+        if (bookDTO.getStatus() != null) {
+            book.setStatus(bookDTO.getStatus());
+        } else {
+            book.setStatus(BookStatus.AVAILABLE);
+        }
+        return book;
+    }
+
+    private static BookDTO getBookDTO(Book book) {
         BookDTO dto = new BookDTO();
 
         // Utilisation de tous les setters
@@ -37,11 +48,18 @@ public class BookMapper {
 
         // Conversion des catégories en IDs
         if (book.getCategories() != null && !book.getCategories().isEmpty()) {
-            List<String> categoryIds = book.getCategories().stream()
-                    .map(Category::getId)
-                    .collect(Collectors.toList());
-            dto.setCategoryIds(categoryIds);
+            dto.setCategoryIds(book.getCategories());
         }
+        return dto;
+    }
+
+    public BookDTO toDTO(Book book) {
+        if (book == null) {
+            logService.warn("Tentative de mapping d'un Book nul vers BookDTO.");
+            return null;
+        }
+
+        BookDTO dto = getBookDTO(book);
 
         logService.info("Mappage réussi de Book vers BookDTO avec ID : {}", book.getId());
         return dto;
@@ -64,21 +82,7 @@ public class BookMapper {
             return ServiceResponse.errorNoData(ResponseCode.BAD_REQUEST, ResponseMessage.INVALID_BOOK_DETAILS);
         }
 
-        Book book = new Book();
-        book.setId(bookDTO.getId());
-        book.setTitle(bookDTO.getTitle().trim());
-        book.setAuthor(bookDTO.getAuthor().trim());
-        book.setImage(bookDTO.getImage());
-
-        // Définir le statut (AVAILABLE par défaut si non spécifié)
-        if (bookDTO.getStatus() != null) {
-            book.setStatus(bookDTO.getStatus());
-        } else {
-            book.setStatus(BookStatus.AVAILABLE);
-        }
-
-        // Note: Les catégories seront définies dans le service
-        // car le mapper ne doit pas accéder aux repositories
+        Book book = getBook(bookDTO);
 
         logService.info("Mappage réussi de BookDTO à Book avec titre : {}", bookDTO.getTitle());
         return ServiceResponse.success(ResponseCode.SUCCESS, ResponseMessage.BOOK_SUCCESS, book);
@@ -108,6 +112,10 @@ public class BookMapper {
 
         if (dto.getBorrowerUsername() != null) {
             book.setBorrowerUsername(dto.getBorrowerUsername());
+        }
+
+        if (dto.getCategoryIds() != null) {
+            book.setCategories(dto.getCategoryIds());
         }
 
         logService.info("Mise à jour de l'entité Book avec ID : {}", book.getId());
