@@ -8,7 +8,7 @@ import com.biblio.medialltech.users.UserRepository;
 import com.biblio.medialltech.users.dto.ChangePasswordDTO;
 import com.biblio.medialltech.users.dto.UserDTO;
 import com.biblio.medialltech.users.entity.User;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,12 +20,13 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final LogService logService;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, LogService logService) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, LogService logService, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.logService = logService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -233,12 +234,11 @@ public class UserServiceImpl implements UserService {
                 );
             }
 
-            // Encrypter le mot de passe
-            String rawPassword = userDTO.getPassword();
-            String encryptedPassword = passwordEncoder.encode(rawPassword);
-            userDTO.setPassword(encryptedPassword);
-
             User user = userMapper.toEntity(userDTO).getData();
+            user.setAccountNonExpired(true);
+            user.setAccountNonLocked(true);
+            user.setCredentialsNonExpired(true);
+
             User savedUser = userRepository.save(user);
 
             return ServiceResponse.logAndRespond(

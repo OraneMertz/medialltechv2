@@ -111,13 +111,6 @@ public class UserMapper {
             user.setCredentialsNonExpired(dto.getCredentialsNonExpired());
         }
 
-        // Gestion du password avec chiffrement
-        if (dto.getPassword() != null && !dto.getPassword().trim().isEmpty()) {
-            String encryptedPassword = passwordEncoder.encode(dto.getPassword());
-            user.setPassword(encryptedPassword);
-            logService.info("Mot de passe mis à jour et chiffré pour l'utilisateur ID : {}", user.getId());
-        }
-
         logService.info("Mise à jour de l'entité User avec ID : {}", user.getId());
     }
 }
