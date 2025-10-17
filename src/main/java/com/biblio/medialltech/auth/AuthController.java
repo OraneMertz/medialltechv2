@@ -50,6 +50,7 @@ public class AuthController {
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
+            response.put("role", authentication.getAuthorities());
             response.put("message", "Connexion réussie");
 
             return ResponseEntity.ok(response);
