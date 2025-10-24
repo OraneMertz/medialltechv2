@@ -12,6 +12,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -48,9 +49,12 @@ public class AuthController {
             session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
                     SecurityContextHolder.getContext());
 
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("role", authentication.getAuthorities());
+            response.put("role", userDetails.getAuthorities());
+            response.put("username", userDetails.getUsername());
             response.put("message", "Connexion réussie");
 
             return ResponseEntity.ok(response);

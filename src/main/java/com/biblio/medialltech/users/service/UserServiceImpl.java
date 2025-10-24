@@ -235,9 +235,7 @@ public class UserServiceImpl implements UserService {
             }
 
             User user = userMapper.toEntity(userDTO).getData();
-            user.setAccountNonExpired(true);
-            user.setAccountNonLocked(true);
-            user.setCredentialsNonExpired(true);
+            user.setAccountEnable(true);
 
             User savedUser = userRepository.save(user);
 

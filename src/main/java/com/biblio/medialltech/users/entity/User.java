@@ -26,27 +26,19 @@ public class User {
     @Field("authorities")
     private Role authorities;
 
-    @Field("account_non_expired")
-    private Boolean accountNonExpired;
-
-    @Field("account_non_locked")
-    private Boolean accountNonLocked;
-
-    @Field("credentials_non_expired")
-    private Boolean credentialsNonExpired;
+    @Field("account_enable")
+    private Boolean accountEnable;
 
     public User() {
     }
 
-    public User(String id, String pseudo, String email, String password, Role authorities, Boolean accountNonExpired, Boolean accountNonLocked, Boolean credentialsNonExpired) {
+    public User(String id, String pseudo, String email, String password, Role authorities, Boolean accountEnable) {
         this.id = id;
         this.pseudo = pseudo;
         this.email = email;
         this.password = password;
         this.authorities = authorities;
-        this.accountNonExpired = accountNonExpired;
-        this.accountNonLocked = accountNonLocked;
-        this.credentialsNonExpired = credentialsNonExpired;
+        this.accountEnable = accountEnable;
     }
 
     public String getId() {
@@ -89,27 +81,11 @@ public class User {
         this.authorities = role;
     }
 
-    public Boolean getAccountNonExpired() {
-        return accountNonExpired;
+    public Boolean getAccountEnable() {
+        return accountEnable;
     }
 
-    public void setAccountNonExpired(Boolean accountNonExpired) {
-        this.accountNonExpired = accountNonExpired;
-    }
-
-    public Boolean getAccountNonLocked() {
-        return accountNonLocked;
-    }
-
-    public void setAccountNonLocked(Boolean accountNonLocked) {
-        this.accountNonLocked = accountNonLocked;
-    }
-
-    public Boolean getCredentialsNonExpired() {
-        return credentialsNonExpired;
-    }
-
-    public void setCredentialsNonExpired(Boolean credentialsNonExpired) {
-        this.credentialsNonExpired = credentialsNonExpired;
+    public void setAccountEnable(Boolean accountEnable) {
+        this.accountEnable = accountEnable;
     }
 }

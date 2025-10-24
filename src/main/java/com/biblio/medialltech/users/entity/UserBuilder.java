@@ -8,9 +8,7 @@ public class UserBuilder {
     private String email;
     private String password;
     private Role authorities;
-    private Boolean accountNonExpired;
-    private Boolean accountNonLocked;
-    private Boolean credentialsNonExpired;
+    private Boolean accountEnable;
 
     public UserBuilder withId(String id) {
         this.id = id;
@@ -37,22 +35,12 @@ public class UserBuilder {
         return this;
     }
 
-    public UserBuilder withAccountNonExpired(Boolean accountNonExpired) {
-        this.accountNonExpired = accountNonExpired;
-        return this;
-    }
-
-    public UserBuilder withAccountNonLocked(Boolean accountNonLocked) {
-        this.accountNonLocked = accountNonLocked;
-        return this;
-    }
-
-    public UserBuilder withCredentialsNonExpired(Boolean credentialsNonExpired) {
-        this.credentialsNonExpired = credentialsNonExpired;
+    public UserBuilder withAccountEnable(Boolean accountEnable) {
+        this.accountEnable = accountEnable;
         return this;
     }
 
     public User createUser() {
-        return new User(id, pseudo, email, password, authorities, accountNonExpired, accountNonLocked, credentialsNonExpired);
+        return new User(id, pseudo, email, password, authorities, accountEnable);
     }
 }

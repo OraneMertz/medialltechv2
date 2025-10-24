@@ -9,9 +9,7 @@ public class UserDTO {
     private String pseudo;
     private String email;
     private Role authorities;
-    private Boolean accountNonExpired;
-    private Boolean accountNonLocked;
-    private Boolean credentialsNonExpired;
+    private Boolean accountEnable;
 
     // Mot de passe seulement pour les requêtes entrantes (création/modification)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
@@ -61,28 +59,12 @@ public class UserDTO {
         this.password = password;
     }
 
-    public Boolean getAccountNonExpired() {
-        return accountNonExpired;
+    public Boolean getAccountEnable() {
+        return accountEnable;
     }
 
-    public void setAccountNonExpired(Boolean accountNonExpired) {
-        this.accountNonExpired = accountNonExpired;
-    }
-
-    public Boolean getAccountNonLocked() {
-        return accountNonLocked;
-    }
-
-    public void setAccountNonLocked(Boolean accountNonLocked) {
-        this.accountNonLocked = accountNonLocked;
-    }
-
-    public Boolean getCredentialsNonExpired() {
-        return credentialsNonExpired;
-    }
-
-    public void setCredentialsNonExpired(Boolean credentialsNonExpired) {
-        this.credentialsNonExpired = credentialsNonExpired;
+    public void setAccountEnable(Boolean accountEnable) {
+        this.accountEnable = accountEnable;
     }
 
     @Override
@@ -92,9 +74,7 @@ public class UserDTO {
                 ", pseudo='" + pseudo + '\'' +
                 ", email='" + email + '\'' +
                 ", authorities=" + authorities +
-                ", accountNonExpired=" + accountNonExpired +
-                ", accountNonLocked=" + accountNonLocked +
-                ", credentialsNonExpired=" + credentialsNonExpired +
+                ", accountEnable=" + accountEnable +
                 ", password='" + password + '\'' +
                 '}';
     }

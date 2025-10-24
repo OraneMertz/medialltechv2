@@ -29,10 +29,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(
                 user.getPseudo(),
                 user.getPassword(),
-                user.getAccountNonExpired() != null ? user.getAccountNonExpired() : true,
-                user.getCredentialsNonExpired() != null ? user.getCredentialsNonExpired() : true,
-                user.getAccountNonLocked() != null ? user.getAccountNonLocked() : true,
-                true, // enabled
+                user.getAccountEnable() != null ? user.getAccountEnable() : true,
+                true,
+                true,
+                true,
                 getAuthorities(user)
         );
     }
